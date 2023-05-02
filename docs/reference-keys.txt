@@ -1,17 +1,4 @@
-fig:hist1
 proposal
-model-1
-model-2
-model-3
-reflections
-formatting-tips
-code
-citations
-math
-plots
-figure-size
-figure-numbers
-resources
 motivation
 data
 models
@@ -64,6 +51,7 @@ partial-dependence-plots-pdp-2
 partial-dependence-plots-of-variable-pay_1-2
 partial-dependence-plots-of-variable-limit_bal-1
 model-evaluation-2
+reflections
 model-comparison
 main-takeaway
 limitaion

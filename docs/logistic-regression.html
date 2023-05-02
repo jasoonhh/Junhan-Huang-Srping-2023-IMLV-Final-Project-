@@ -237,29 +237,29 @@
 </div>
 <div id="shapley-values" class="section level3 hasAnchor" number="3.3.2">
 <h3><span class="header-section-number">3.3.2</span> Shapley Values<a href="logistic-regression.html#shapley-values" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p><img src="finalproj_files/figure-html/unnamed-chunk-5-1.png" width="768" /></p>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-33-1.png" width="768" /></p>
 <p>The Shapley value is the average contribution of a feature value to the prediction in different coalitions. The plot above shows the mean absolute SHAP values of the logistic regression we built, which represent the each variable’s impact to prediction. Because higher absolute mean Shapley value indicates a stronger impact to the prediction, the variable <code>PAY_1</code> having highest Shapley value is the most important for prediction and the <code>LIMIT_BAL</code> is the second.</p>
 </div>
 <div id="partial-dependence-plots-pdp" class="section level3 hasAnchor" number="3.3.3">
 <h3><span class="header-section-number">3.3.3</span> Partial Dependence Plots (PDP)<a href="logistic-regression.html#partial-dependence-plots-pdp" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <div id="partial-dependence-plots-of-variable-pay_1" class="section level4 hasAnchor" number="3.3.3.1">
 <h4><span class="header-section-number">3.3.3.1</span> Partial Dependence Plots of variable <code>PAY_1</code><a href="logistic-regression.html#partial-dependence-plots-of-variable-pay_1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p><img src="finalproj_files/figure-html/unnamed-chunk-6-1.png" width="768" /></p>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-34-1.png" width="768" /></p>
 <p>The PDP of Limit Balance shows that the relationship between the probability of default and PAY_1 are non-monomaniacal while all other features remain constant. More specifically, the probability of default fluctuates with the late payment status severity (The increase in delinquent months has paralleled the increase in severity) and attains highest at <code>PAY_1</code> = 3. Moreover, the distribution of contribution of each level of PAY_1 is coincide with the distribution of the coefficients of each level of PAY_1.</p>
 </div>
 <div id="partial-dependence-plots-of-variable-limit_bal" class="section level4 hasAnchor" number="3.3.3.2">
 <h4><span class="header-section-number">3.3.3.2</span> Partial Dependence Plots of variable <code>LIMIT_BAL</code><a href="logistic-regression.html#partial-dependence-plots-of-variable-limit_bal" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p><img src="finalproj_files/figure-html/unnamed-chunk-7-1.png" width="768" /></p>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-35-1.png" width="768" /></p>
 <p>The PDP of Limit Balance shows that the relationship between the probability of default and Limit Balance are monomaniacal. More specifically, the probability of default will decrease if the limit balance increases. However, their relationship is non-linear because there is concave trend. Th trend also matches the exploratory data analysis of PAY_1 which states that the mean Limit Balance of the default clients are lower than non-default clients.</p>
 </div>
 </div>
 </div>
 <div id="model-evaluation" class="section level2 hasAnchor" number="3.4">
 <h2><span class="header-section-number">3.4</span> Model Evaluation<a href="logistic-regression.html#model-evaluation" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p><img src="finalproj_files/figure-html/unnamed-chunk-8-1.png" width="768" /></p>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-36-1.png" width="768" /></p>
 <p>Because the model purpose is accurately predicting the credit card default clients, we should not only focus on the accuracy but also the sensitivity, which is the proportion of actual positive cases. From the plot we can find that accuracy and sensitivity achieve the best balance between correctly identifying positive cases (sensitivity) , while still maintaining a high overall rate of correct classifications (accuracy) at threshold = 0.2147215.</p>
 <p>The best accuracy is 0.6521667 and the best sensitivity is 0.6527132.</p>
-<p><img src="finalproj_files/figure-html/unnamed-chunk-9-1.png" width="768" /></p>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-37-1.png" width="768" /></p>
 <p>The plot above represents the Receiver Operating Characteristic (ROC) curves of the random forest model. Area Under the Curve (AUC), which measures the area under the Receiver Operating Characteristic (ROC) curve, is a metric used to evaluate the performance of a binary classification model. Given the AUC of model = 0.707 and the TPR at the optimal threshold, we can make a conclusion that the logistic regression model is good if we focus on accuracy and sensitivity.</p>
 
 </div>
@@ -324,6 +324,20 @@ gitbook.start({
 });
 </script>
 
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
 </body>
 
 </html>
