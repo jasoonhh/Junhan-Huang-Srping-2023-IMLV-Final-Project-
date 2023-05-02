@@ -1,0 +1,510 @@
+# Exploratory Data Analysis
+
+```{r, message=FALSE}
+path = getwd()
+setwd(path)
+library(dplyr)
+library(ggplot2)
+library(scales)
+library(gridExtra)
+library(corrplot)
+```
+
+```{r, message=FALSE}
+library(readxl)
+Data <- read_excel("ccd.xls")
+colnames(Data) <- Data[1, ]
+Data <- Data[-1, ]
+
+Data$AGE <- as.numeric(Data$AGE)
+
+Data$LIMIT_BAL <- as.numeric(Data$LIMIT_BAL)
+
+Data$BILL_AMT1 <- as.numeric(Data$BILL_AMT1)
+Data$BILL_AMT2 <- as.numeric(Data$BILL_AMT2)
+Data$BILL_AMT3 <- as.numeric(Data$BILL_AMT3)
+Data$BILL_AMT4 <- as.numeric(Data$BILL_AMT4)
+Data$BILL_AMT5 <- as.numeric(Data$BILL_AMT5)
+Data$BILL_AMT6 <- as.numeric(Data$BILL_AMT6)
+
+Data$PAY_AMT1 <- as.numeric(Data$PAY_AMT1)
+Data$PAY_AMT2 <- as.numeric(Data$PAY_AMT2)
+Data$PAY_AMT3 <- as.numeric(Data$PAY_AMT3)
+Data$PAY_AMT4 <- as.numeric(Data$PAY_AMT4)
+Data$PAY_AMT5 <- as.numeric(Data$PAY_AMT5)
+Data$PAY_AMT6 <- as.numeric(Data$PAY_AMT6)
+
+Data$PAY_0 <- as.numeric(Data$PAY_0)
+Data$PAY_2 <- as.numeric(Data$PAY_2)
+Data$PAY_3 <- as.numeric(Data$PAY_3)
+Data$PAY_4 <- as.numeric(Data$PAY_4)
+Data$PAY_5 <- as.numeric(Data$PAY_5)
+Data$PAY_6 <- as.numeric(Data$PAY_6)
+
+Data$Default <- Data$`default payment next month`
+Data$`default payment next month` <- NULL
+```
+
+
+## The Structure of Dataset
+
+We should find out the type and amount of unique values in each column of the dataset. Basing on the type of columns and the amount of unique value, we can identify which variables are numerical and categorical.
+
+```{r, message=FALSE, echo=FALSE}
+
+types <- sapply(Data, class)
+unique_val_amount <- sapply(Data, function(x) n_distinct(x, na.rm = TRUE))
+Temp <- lapply(Data, unique)
+
+types_df <- data.frame(Type = types, Unique_Value_Amount = unique_val_amount)
+
+print(types_df)
+
+
+
+```
+
+### Data Identification
+
+From the data frame above, we can find "SEX", "EDUCATION" and "MARRIAGE" have character value and "PAY_0", "PAY_2", "PAY_3", "PAY_4", "PAY_5", "PAY_6" have numerical value but little unique value amount. Combined with the data description, we can recognize the above variables as categorical variables. To the rest variables except "ID" and "Default", we will treat them as numerical variable. "ID" will be dropped because it have unique value for each row which it will not provide any information for prediction. "Default" is the label.
+
+
+
+
+### Feature Problem Detection
+
+1) There is a naming error because there is no variable named  `PAY_0` in the data description and missing the variable named `PAY_1`. 
+
+```{r}
+Data$PAY_1 <- Data$PAY_0
+Data$PAY_0 <- NULL
+```
+
+
+2) The data description states that unique values of variables `PAY_1` to `PAY_6` should be -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, which means the maxium of unique variable amount is 11. However, the unique value amount of `PAY_1` to `PAY_4` concluded above are all 11. Then we check the unique value of variable `PAY_1` to `PAY_6`, we can find that there are two extra value "-2" and "0" which is not defined in data description.
+```{r}
+Pay_var <- c("PAY_1", "PAY_2", "PAY_3", "PAY_4", "PAY_5", "PAY_6")
+
+lapply(Data[, Pay_var], unique)
+```
+
+3) Similar with variable `PAY_1` to `PAY_6`, variable `EDUCATION` should only have 4 but actually 7 in Structure data frame above. By checking the unique value of variable `EDUCATION`, we find there are 3 extra value 0, 5, 6.
+```{r}
+unique(Data$EDUCATION)
+```
+
+4) Similar with variable `EDUCATION`, variable `EDUCATION` should only have 3 but actually 4 in Structure data frame above. By checking the unique value of variable `EDUCATION`, we find there is extra value 0.
+```{r}
+unique(Data$MARRIAGE)
+```
+
+
+
+## Data Visualization & Analysis
+
+### Label: Default of credit card 
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+percent_df <- Data %>%
+group_by(Default) %>%
+summarize(count = n()) %>%
+mutate(percentage = count/sum(count))
+
+ggplot(percent_df, aes(x = Default, y = percentage, fill = Default)) +
+geom_col(position = "dodge") +
+  geom_text(aes(label = sprintf("%.2f%%", 100*percentage)),
+            position = position_dodge(width = 0.9), 
+            vjust = -0.5) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(x = "Default", y = "Percentage", fill = "Default") +
+  theme(legend.position = "bottom")
+```
+
+- 77.88% of the observations in the data set belong to the non-default group (Default = 0).
+- 22.12% of the observations in the data set belong to the default group (Default = 1).
+- There are 23,364 observations in the non-default class and only 6,636 observations in the default class, which is a large difference in the number of observations, indicating a class imbalance.
+
+### Categorical Variable
+
+The data analysis of categorical variable is aiming to explore the relationship between the selected variable and the Default variable in a dataset. By grouping the data by these two variables and calculating the percentage of observations in each group, we can see how the percentage of defaults differs between males and females. 
+
+Moreover, the chi-squared test is used to determine whether there is a significant association between Default and categorical feature. 
+
+
+#### SEX
+
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+percent_df <- Data %>%
+group_by(Default, SEX) %>%
+summarize(count = n()) %>%
+mutate(percentage = count/sum(count))
+
+ggplot(percent_df, aes(x = SEX, y = percentage, fill = Default)) +
+geom_col(position = "dodge") +
+  geom_text(aes(label = sprintf("%.2f%%", 100*percentage)),, 
+            position = position_dodge(width = 0.9), 
+            vjust = -0.5) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(x = "SEX", y = "Percentage", fill = "Default") +
+  theme(legend.position = "bottom")
+```
+
+
+- We firstly notice that the distribution of Default status is different between Male and Female, which indicates that there may be a difference in the proportion of males and females who default on their financial obligations. 
+
+
+- However, gender is a sensitive attribute and we should find more significant evidence to make a conclusion. 
+
+```{r}
+cont_table <- table(Data$SEX, Data$Default)
+
+chisq_test <- chisq.test(cont_table)
+
+print(chisq_test)
+```
+
+$H_0:$ There is no significant association between the categorical variable `SEX` and `Default`.
+
+$H_a:$ There is significant association between the categorical variable `SEX` and `Default`.
+
+- Given the Chi-Squared Test above, since the p-value is smaller than the common significance level of 0.05, we can reject the null hypothesis ($H_0$) at the 5% level of significance. This means that we do have sufficient evidence to conclude that there is a significant association between `SEX` and `Default`.
+
+
+
+#### EDUCATION
+
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+percent_df <- Data %>%
+group_by(Default, EDUCATION) %>%
+summarize(count = n()) %>%
+mutate(percentage = count/sum(count))
+
+ggplot(percent_df, aes(x = EDUCATION, y = percentage, fill = Default)) +
+geom_col(position = "dodge") +
+  geom_text(aes(label = sprintf("%.2f%%", 100*percentage)),, 
+            position = position_dodge(width = 0.9), 
+            vjust = -0.5, 
+            size=3) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(x = "EDUCATION", y = "Percentage", fill = "Default") +
+  theme(legend.position = "bottom")
+```
+
+- Because the value of `EDUCATION` defined in data description are only 1, 2, 3, and the proportion of undefined value is smaller enough (<0.1%), we can ignore the information from the undefined value. 
+
+- The plot shows that the distribution of Default status is different between Education levels and revels a trend that the clients who have higher Education level will has lower possibility to default because there is lower proportion of default clients in the group of clients who has higher Education level.
+
+```{r}
+cont_table <- table(Data$EDUCATION[Data$EDUCATION>=1 & Data$EDUCATION<=3], Data$Default[Data$EDUCATION>=1 & Data$EDUCATION<=3])
+
+chisq_test <- chisq.test(cont_table)
+
+print(chisq_test)
+```
+
+$H_0:$ There is no significant association between the categorical variable `EDUCATION` and `Default`.
+
+$H_a:$ There is significant association between the categorical variable `EDUCATION` and `Default`.
+
+- Given the Chi-Squared Test above, since the p-value is smaller than the common significance level of 0.05, we can reject the null hypothesis ($H_0$) at the 5% level of significance. This means that we do have sufficient evidence to conclude that there is a significant association between `EDUCATION` and `Default`.
+
+
+
+#### MARRIAGE
+
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+percent_df <- Data %>%
+group_by(Default, MARRIAGE) %>%
+summarize(count = n()) %>%
+mutate(percentage = count/sum(count))
+
+ggplot(percent_df, aes(x = MARRIAGE, y = percentage, fill = Default)) +
+geom_col(position = "dodge") +
+  geom_text(aes(label = sprintf("%.2f%%", 100*percentage)), 
+            position = position_dodge(width = 0.9), 
+            vjust = -0.5) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(x = "MARRIAGE", y = "Percentage", fill = "Default") +
+  theme(legend.position = "bottom")
+```
+
+- Because the value of `MARRIAGE` defined in data description are only 1, 2, 3, and the proportion of undefined value is smaller enough (<0.3%), we can ignore the information from the undefined value. 
+
+- The plot shows that the distribution of Default status is different between MARRIAGE levels 
+
+```{r}
+cont_table <- table(Data$MARRIAGE[Data$MARRIAGE>=1 & Data$MARRIAGE<=3], Data$Default[Data$MARRIAGE>=1 & Data$MARRIAGE<=3])
+
+chisq_test <- chisq.test(cont_table)
+
+print(chisq_test)
+```
+
+$H_0:$ There is no significant association between the categorical variable `MARRIAGE` and `Default`.
+
+$H_a:$ There is significant association between the categorical variable `MARRIAGE` and `Default`.
+
+- Given the Chi-Squared Test above, since the p-value is smaller than the common significance level of 0.05, we can reject the null hypothesis ($H_0$) at the 5% level of significance. This means that we do have sufficient evidence to conclude that there is a significant association between `MARRIAGE` and `Default`.
+
+#### Past Payment Action
+
+```{r, fig.width=8, fig.height=12, message=FALSE}
+
+plots <- list()
+
+for (col in Pay_var) {
+  
+  percent_df <- Data %>%
+    group_by(Default, .data[[col]]) %>%
+    summarize(count = n()) %>%
+    mutate(percentage = count/sum(count))
+  
+  current_plot <- ggplot(percent_df, aes(x = .data[[col]], y = percentage, fill = Default)) +
+    geom_col(position = "dodge") +
+    geom_text(aes(label = sprintf("%.1f%%", 100*percentage)), 
+            position = position_dodge(width = 0.9),
+            vjust = 0,
+            size=2,
+            angle = 45) +
+    scale_y_continuous(labels = scales::percent_format()) +
+    labs(x = col, y = "Percentage", fill = "Default") +
+    theme(legend.position = "bottom")
+  
+  plots[[col]] <- current_plot
+}
+
+grid.arrange(grobs = plots, ncol = 2)
+  
+```
+
+- All 6 variable share similar bell-shaped right skewed distribution which is that value 0 has highest proportion, value -2 has secondly highest proportion and then value -1 has third.Only variable `PAY_1` has a speacial case that value 1 share secondly highest proportion.
+
+### Numerical Variable
+
+The data analysis of numerical variable will focus on the distribution, statistics and inter-correlation between each numerical variable. 
+
+#### Amount of the given credit
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+plot.1<-ggplot(Data, aes(x = LIMIT_BAL, fill = Default)) + 
+  geom_boxplot(position = "dodge", alpha = 0.8) +
+  labs(x = "LIMIT_BAL", y = "Default", fill = "Default") +
+  theme(legend.position = "bottom")
+
+plot.2<-ggplot(Data, aes(x = LIMIT_BAL, fill = Default)) +
+  geom_histogram(position = "dodge", alpha = 0.8, bins = 100) +
+  labs(x = "LIMIT_BAL", y = "Count", fill = "Default") +
+  theme(legend.position = "bottom")
+
+grid.arrange(plot.1, plot.2, ncol = 1)
+
+t.test(LIMIT_BAL ~ Default, data = Data)
+```
+
+- The `LIMIT_BAL` distribution of default and non-default are similar, both of them are right-skewed and have extreme outlier. 
+- However, the mean of limited balance are differen t in two group, which indicates that non-default clients generally have higher limited balance than default clients.
+- The statistics of them has great difference such as the mean and outlier of non-default is greater than default's.
+- From the result of T-Test whose null hypothesis is there is no difference between the Default's credit limit mean and Non-Default's credit limit mean, the p value is smaller than 2.2e-16 and consequently we have sigenificant evidence to reject the null hypothesis.
+
+
+#### AGE
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+plot.1<-ggplot(Data, aes(x = AGE, fill = Default)) + 
+  geom_boxplot(position = "dodge", alpha = 0.8) +
+  labs(x = "AGE", y = "Count", fill = "Default") +
+  theme(legend.position = "bottom")
+
+plot.2<-ggplot(Data, aes(x = AGE, fill = Default)) +
+  geom_histogram(position = "dodge", alpha = 0.8, bins = 100) +
+  labs(x = "AGE", y = "Count", fill = "Default") +
+  theme(legend.position = "bottom")
+
+grid.arrange(plot.1, plot.2, ncol = 1)
+
+t.test(AGE ~ Default, data = Data)
+```
+
+- The distribution of Age of default and non-default clients are slightly different which is that default clients has more average proportion in each age but non-default clients' age are more centered, but both of distribution are right-skewed. 
+- However, the boxplot indicates that both of two kinds of clients have similar average age and have extreme outlier.
+-- From the result of T-Test whose null hypothesis is there is no difference between the Default's Age mean and Non-Default's Age mean, the p value is 0.02039 and consequently we have sigenificant evidence to reject the null hypothesis under the significant level 0.05.
+
+
+#### Amount of bill statement
+```{r, fig.width=8, fig.height=12, message=FALSE}
+plot.1<-ggplot(Data, aes(x = BILL_AMT1, fill = Default)) + 
+  geom_boxplot(position = "dodge", alpha = 0.8) +
+  labs(x = "BILL_AMT1", y = "Default", fill = "Default") +
+  theme(legend.position = "bottom")
+
+plot.2<-ggplot(Data, aes(x = BILL_AMT2, fill = Default)) + 
+  geom_boxplot(position = "dodge", alpha = 0.8) +
+  labs(x = "BILL_AMT2", y = "Default", fill = "Default") +
+  theme(legend.position = "bottom")
+
+plot.3<-ggplot(Data, aes(x = BILL_AMT3, fill = Default)) + 
+  geom_boxplot(position = "dodge", alpha = 0.8) +
+  labs(x = "BILL_AMT3", y = "Default", fill = "Default") +
+  theme(legend.position = "bottom")
+
+plot.4<-ggplot(Data, aes(x = BILL_AMT4, fill = Default)) + 
+  geom_boxplot(position = "dodge", alpha = 0.8) +
+  labs(x = "BILL_AMT4", y = "Default", fill = "Default") +
+  theme(legend.position = "bottom")
+
+plot.5<-ggplot(Data, aes(x = BILL_AMT5, fill = Default)) + 
+  geom_boxplot(position = "dodge", alpha = 0.8) +
+  labs(x = "BILL_AMT5", y = "Default", fill = "Default") +
+  theme(legend.position = "bottom")
+
+plot.6<-ggplot(Data, aes(x = BILL_AMT6, fill = Default)) + 
+  geom_boxplot(position = "dodge", alpha = 0.8) +
+  labs(x = "BILL_AMT6", y = "Default", fill = "Default") +
+  theme(legend.position = "bottom")
+
+grid.arrange(plot.1, plot.2, plot.3, plot.4, plot.5, plot.6, ncol = 1)
+
+
+```
+
+- By comparing the six graphs, it can be seen that the amount of bills has fluctuated significantly in the past six months for both credit card defaulters and credit card defaulters.
+
+- However, there is no significant difference in bill statement amount between credit card defaulters and credit card defaulters. The bill statement amount distribution of two kinds of clients are both right-skewed in all of the past 6 months.
+
+Because the bill statement amount of each month can show clients' spending behavior which means the bill statement might be inter-correlated.
+```{r, fig.width=8, fig.height=6, message=FALSE}
+BILL_AMT_var <-c("BILL_AMT1", "BILL_AMT2", "BILL_AMT3", "BILL_AMT4", "BILL_AMT5", "BILL_AMT6")
+
+cor_matrix <- cor(Data[, BILL_AMT_var])
+
+corrplot(cor_matrix, type = "upper", method = "color", 
+         tl.col = "black", tl.srt = 45, tl.cex = 0.7, 
+         addCoef.col = "black")
+```
+
+
+- From the corrplot, it can be said that all of 6 variable are highly inter-correlated because there correlation are all greater than 0.8
+
+- The correlation level decreases when time period gap is greater, which indicates than the next month bill statement amount is most correlated with current bill statement amount.
+
+#### Amount of Payment
+```{r, fig.width=8, fig.height=12, message=FALSE}
+plot.1<-ggplot(Data, aes(x = PAY_AMT1, fill = Default)) + 
+  geom_boxplot(position = "dodge", alpha = 0.8) +
+  labs(x = "PAY_AMT1", y = "Default", fill = "Default") +
+  theme(legend.position = "bottom")
+
+plot.2<-ggplot(Data, aes(x = PAY_AMT2, fill = Default)) + 
+  geom_boxplot(position = "dodge", alpha = 0.8) +
+  labs(x = "PAY_AMT2", y = "Default", fill = "Default") +
+  theme(legend.position = "bottom")
+
+plot.3<-ggplot(Data, aes(x = PAY_AMT3, fill = Default)) + 
+  geom_boxplot(position = "dodge", alpha = 0.8) +
+  labs(x = "PAY_AMT3", y = "Default", fill = "Default") +
+  theme(legend.position = "bottom")
+
+plot.4<-ggplot(Data, aes(x = PAY_AMT4, fill = Default)) + 
+  geom_boxplot(position = "dodge", alpha = 0.8) +
+  labs(x = "PAY_AMT4", y = "Default", fill = "Default") +
+  theme(legend.position = "bottom")
+
+plot.5<-ggplot(Data, aes(x = PAY_AMT5, fill = Default)) + 
+  geom_boxplot(position = "dodge", alpha = 0.8) +
+  labs(x = "PAY_AMT5", y = "Default", fill = "Default") +
+  theme(legend.position = "bottom")
+
+plot.6<-ggplot(Data, aes(x = PAY_AMT6, fill = Default)) + 
+  geom_boxplot(position = "dodge", alpha = 0.8) +
+  labs(x = "PAY_AMT6", y = "Default", fill = "Default") +
+  theme(legend.position = "bottom")
+
+grid.arrange(plot.1, plot.2, plot.3, plot.4, plot.5, plot.6, ncol = 1)
+
+
+```
+
+- By comparing the six graphs, we can observe that the amount of payment all gather in 0 with some extreme outlier in the past six months for both credit card defaulters and credit card defaulters.
+
+- However, there is no significant difference in bill payment amount between credit card defaulters and credit card defaulters
+
+Because the bill payment amount of each month can show clients' spending behavior which means the bill payment might be inter-correlated.
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+PAY_AMT_var <-c("PAY_AMT1", "PAY_AMT2", "PAY_AMT3", "PAY_AMT4", "PAY_AMT5", "PAY_AMT6")
+
+cor_matrix <- cor(Data[, PAY_AMT_var])
+
+corrplot(cor_matrix, type = "upper", method = "color", 
+         tl.col = "black", tl.srt = 45, tl.cex = 0.7, 
+         addCoef.col = "black")
+```
+
+- From the corrplot, it can be said that all of 6 variable are less inter-correlated because there correlation are all smaller than 0.3
+
+- The correlation level decreases when time period gap is greater, which indicates than the next month bill payment amount is most correlated with current bill payment amount.
+
+
+#### Correlation
+```{r, fig.width=8, fig.height=6, message=FALSE}
+Numerical_var <-c("AGE", "LIMIT_BAL", "BILL_AMT1", "BILL_AMT2", "BILL_AMT3", "BILL_AMT4", "BILL_AMT5", "BILL_AMT6", "PAY_AMT1", "PAY_AMT2", "PAY_AMT3", "PAY_AMT4", "PAY_AMT5", "PAY_AMT6")
+
+cor_matrix <- cor(Data[, Numerical_var])
+
+corrplot(cor_matrix, type = "upper", method = "color", 
+         tl.col = "black", tl.srt = 45, tl.cex = 0.7, 
+         addCoef.col = "black")
+```
+
+- From the overall correlation plot, we can find variable `AGE` and `LIMIT_BAL` are not correlated with other numerical variable 
+
+
+## EDA Conclusion
+
+### Feature Selection
+
+Following by the EDA of each variable, we decide to choose "SEX", "EDUCATION", "MARRIAGE", "PAY_1", "AGE", "LIMIT_BAL", "BILL_AMT1", "PAY_AMT1" for further model building.
+```{r}
+Selected_Var <- c("SEX", "EDUCATION", "MARRIAGE", "PAY_1", "AGE", "LIMIT_BAL", "BILL_AMT1", "PAY_AMT1", "Default")
+New_Data <- Data[, Selected_Var]
+New_Data <- data.frame(New_Data)
+```
+
+
+
+### Data Wrangling and Spliting
+
+Data wrangling includes data cleaning, transforming, and encoding. 
+
+
+```{r}
+Cat_Var <- c("SEX", "EDUCATION", "MARRIAGE", "PAY_1")
+Num_Var <- c("AGE", "LIMIT_BAL", "BILL_AMT1", "PAY_AMT1")
+Label <- "Default"
+
+New_Data[, Num_Var] <- scale(New_Data[, Num_Var])
+for (col in Cat_Var) {
+  New_Data[[col]] <- factor(New_Data[[col]])
+}
+New_Data[[Label]] <- factor(New_Data[[Label]])
+```
+ 
+
+Randomly Split the data set to get train and test data set. 
+
+```{r}
+set.seed(123)
+train_idx <- sample(nrow(New_Data), nrow(New_Data) * 0.8)
+train_data <- New_Data[train_idx, ]
+test_data <- New_Data[-train_idx, ]
+```
+
+- The Dimension of Train Data: 24000 x 9
+
+- The Dimension of Test Data: 6000 x 9
+
+```{r}
+```

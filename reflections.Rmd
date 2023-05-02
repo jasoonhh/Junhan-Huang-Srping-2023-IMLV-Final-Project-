@@ -1,2 +1,36 @@
 # Reflections
 
+## Model Comparison
+
+The information of three model we built in this project is summerized below
+
+|  Model   | Accuracy  |  Sensitivity   | Interpretablilty  |
+|  ----  | ----  |  ----  | ----  |
+| Logistic Regression  | 0.6521667 | 0.6527132 | High: Can interpret by its model summary
+| Decision Tree  | 0.6995 | 0.6 | Low: Can partially interpret by its model visualization
+| Random Forest  | 0.7293333 | 0.6077519 | Low: Black Box Model
+
+There is an explicit trade-off between accuracy and sensitivity which means we would have lower overall accuracy if we are focusing on correctly detecting default clients. Given the table above, random forest achieve the balance between accuracy and sensitivity and consequently it might the most appropreate model in this project.
+
+## Main Takeaway
+
+The main takeaway of this project is building useful model random forest to identify potential default clients with acceptable accuracy and sensitivity. Moreover, we realize that the previous month payment behavior, limited balance, and last month bill statement amount are the top 3 most important variable to identify default clients. Last but not least, we gain meaningful experience about interpreting the model we learned before via new methods such us Shaply Values and partial dependence plot.
+
+## Limitaion
+
+1. Data : 
+   - Noisy: There are unexplainable values in categorical variables and extreme outlier in numerical variables, which might affect the performance and robustness of model.
+   - Imbalance : The data set is severely imbalanced.
+   
+
+2. Model: Random Forest
+
+   - Lack of Interpretablilty: Random Forest is too complex to understand the relationship between the variable and prediction.
+   
+   - Weak to imbalanced data sets: Random Forest will be biased towards the majority class.
+   
+   - Computational Complexity High
+   
+## Future Work
+
+We can implement resampling method such as Synthetic Minority Over-sampling Technique (SMOTE) on original data set to eliminate the effect of imbalance and improve the model performance which might provide better prediction on credit card default clients. Moreover, we can also implement cost-sensitive learning algorithms such as CostSensitiveRandomForest.

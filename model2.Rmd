@@ -1,1 +1,241 @@
-# [Model 2]
+# [Decision Tree]
+
+```{r, message=FALSE, warning=FALSE}
+path = getwd()
+setwd(path)
+library(rpart)
+library(caret)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(pROC)
+library(pdp)
+library(rpart.plot)
+library(gridExtra)
+library(ggplot2)
+```
+
+
+
+
+## Introduction 
+
+Decision Tree is a non-parametric supervised model, which indicates that there is no particular assumptions about the kind of mapping function. we will use CART decision tree, which is a top-down greedy approach to find the partition minimizing the Gini Index, to predict whether or not a person will be a Credit Card defaulter.
+
+## Model Fitting
+
+### Complexity Parameter (cp)
+```{r, fig.width=8, fig.height=6, message=FALSE}
+New_Data <- read.csv("New_Data.csv")
+
+Cat_Var <- c("SEX", "EDUCATION", "MARRIAGE", "PAY_1")
+Num_Var <- c("AGE", "LIMIT_BAL", "BILL_AMT1", "PAY_AMT1")
+Label <- "Default"
+
+New_Data[, Num_Var] <- scale(New_Data[, Num_Var])
+for (col in Cat_Var) {
+  New_Data[[col]] <- factor(New_Data[[col]])
+}
+New_Data[[Label]] <- factor(New_Data[[Label]])
+
+set.seed(123)
+train_idx <- sample(nrow(New_Data), nrow(New_Data) * 0.8)
+train_data <- New_Data[train_idx, ]
+test_data <- New_Data[-train_idx, ]
+```
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+set.seed(5293-1)
+tree <- rpart(Default ~ ., data = train_data, method = "class", cp=0)
+
+plotcp(tree)
+
+cp_min <- tree$cptable[which.min(tree$cptable[,"xerror"]),"CP"]
+```
+Complexity parameter is a regularization parameter that controls the tree size. Larger cp makes the tree simpler/smaller while smaller cp makes tree more complex.
+The line chart cp versus cross-validated error rate roughly shows that cross-validated error rate will decrease initially and increase later when cp is increasing. The tree model attains lowest cross-validated error rate when cp = 0.00101.
+
+
+### Decision Tree 
+
+The left plot is the full decision tree model and the right is the pruned decision tree model.
+
+```{r, fig.width=8, fig.height=6, message=FALSE, warning=FALSE}
+
+tree_model <- rpart(formula = Default ~., data = train_data, cp=0, method = "class")
+tree_model_prune <- rpart(formula = Default ~., data = train_data, cp=cp_min, method = "class")
+
+par(mfrow = c(1, 2))
+rpart.plot(tree_model)
+rpart.plot(tree_model_prune)
+```
+
+Given the two plot above, we can find that the pruning with cp = 0.00101 can significantly reduce the decision tree model complexity (From depth 28 to depth 3). As the full decision tree is too complex to read and interpret, we would pay more attention on the pruned tree model. In each node of the the pruned tree model, we can find the major label of the data in the node which is on the top of the node, the gini index which represent the measure of impurity and is at the middle of the node, and the percentage which represents the proportion of training instances that belong to each class at that node and is at the bottom of node. The conditioanl statement in the middle of branch is the criteria of splitting. 
+
+## Model Interpreation
+
+### Shapley Values
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+pred <- function(model, newdata) {
+predict(model, newdata = newdata, type = "prob")[, 2]
+}
+
+shap_values <- fastshap::explain(
+tree_model,
+X = train_data,
+feature_names = colnames(train_data |> select(-Default)),
+pred_wrapper = pred,
+nsim = 9,
+newdata = test_data,
+adjust = TRUE
+)
+
+shap_values <- shap_values[rowSums(is.na(shap_values)) == 0, ]
+
+shap <- as.data.frame(shap_values) |>
+rownames_to_column("id") |>
+pivot_longer(-id, names_to = "var", values_to = "shap_value")
+
+plot.1<-shap |>
+group_by(var) |>
+summarize(mean_absolute_shap_value = mean(abs(shap_value))) |>
+ggplot(aes(x = mean_absolute_shap_value, y = reorder(var, mean_absolute_shap_value))) +
+geom_col(fill = "cornflowerblue") +
+ylab("")+
+ggtitle("Full Decision Tree")
+
+
+shap_values_prune <- fastshap::explain(
+tree_model_prune,
+X = train_data,
+feature_names = colnames(train_data |> select(-Default)),
+pred_wrapper = pred,
+nsim = 9,
+newdata = test_data,
+adjust = TRUE
+)
+
+shap_values_prune <- shap_values[rowSums(is.na(shap_values_prune)) == 0, ]
+
+shap_prune <- as.data.frame(shap_values_prune) |>
+rownames_to_column("id") |>
+pivot_longer(-id, names_to = "var", values_to = "shap_value")
+
+plot.3<-shap_prune |>
+group_by(var) |>
+summarize(mean_absolute_shap_value = mean(abs(shap_value))) |>
+ggplot(aes(x = mean_absolute_shap_value, y = reorder(var, mean_absolute_shap_value))) +
+geom_col(fill = "cornflowerblue") +
+ylab("")+
+ggtitle("Pruned Decision Tree")
+
+
+grid.arrange(plot.1, plot.3, ncol =1)
+
+```
+The Shapley value is the average contribution of a feature value to the prediction in different coalitions. The plot above shows the mean absolute SHAP values of the decision tree model we built, which represent the each variable's impact to prediction.
+Both of the full tree model and pruned tree model have same feature importance distribution and the most importance feature is `PAY_1` and the second is `BILL_AMT1`.
+However, by comparing the magnitude of mean absolute shap value between the full tree model and pruned tree model, we can find the pruned decision tree model treat the `PAY_1` more important than full decision tree.
+
+### Partial Dependence Plots (PDP)
+
+#### Partial Dependence Plots of variable `PAY_1`
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+pdp_PAY_1 <- partial(tree_model, pred.var = "PAY_1",  prob = TRUE, rug = TRUE)
+
+plot.1 <- ggplot(pdp_PAY_1, aes(x = PAY_1, y = yhat)) +
+  geom_bar(stat = "identity", fill = "cornflowerblue") +
+  labs(x = "PAY_1", y = "Probability",
+       title = "Partial Dependence Plot for PAY_1 from Full Tree Model") +
+  theme_bw()
+
+pdp_PAY_1_prune <- partial(tree_model_prune, pred.var = "PAY_1",  prob = TRUE, rug = TRUE)
+
+plot.2 <- ggplot(pdp_PAY_1_prune, aes(x = PAY_1, y = yhat)) +
+  geom_bar(stat = "identity", fill = "cornflowerblue") +
+  labs(x = "PAY_1", y = "Probability",
+       title = "Partial Dependence Plot for PAY_1 from Pruned Tree Model") +
+  theme_bw()
+
+grid.arrange(plot.1, plot.2, ncol =2)
+```
+From the Partial Dependence Plot of PAY_1 from the full tree model and the pruned tree model, we can see that the pruning model's distribution of level contribution of PAY_1 is less volatile than that of the full model. This information suggests that clients who have a history of less delay in their payments (lower PAY_1 level) are less likely to default on their credit card payments. The cut off of the level impact toward prediction at `PAY_1` = 2 matches both models partition criteria at `PAY_1`. 
+
+However, there is a paradoxical phenomenon where the full decision tree model's contribution distribution of PAY_1 levels is completely opposite to the logistic regression model's contribution distribution of PAY_1 levels. This phenomenon could be explained by the exploratory data analysis of PAY_1, where the frequency distribution of PAY_1 levels among default clients is similar to the full decision tree model's distribution of level contribution of PAY_1. 
+
+#### Partial Dependence Plots of variable `BILL_AMT1`
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+pdp_LIMIT_BAL <- partial(tree_model, pred.var = "BILL_AMT1", prob = TRUE, rug = TRUE)
+
+plot.1 <- ggplot(pdp_LIMIT_BAL, aes(x = BILL_AMT1, y = yhat)) +
+  geom_line(color = "blue") +
+  geom_rug(data = train_data, aes(LIMIT_BAL), inherit.aes = FALSE, alpha = .5,
+  color = "red") +
+  labs(x = "BILL_AMT1", y = "Probability",
+       title = "Partial Dependence Plot for BILL_AMT1 from Full Tree Model") +
+  theme_bw()
+
+pdp_LIMIT_BAL_prune <- partial(tree_model_prune, pred.var = "BILL_AMT1", prob = TRUE, rug = TRUE)
+
+plot.2 <- ggplot(pdp_LIMIT_BAL_prune, aes(x = BILL_AMT1, y = yhat)) +
+  geom_line(color = "blue") +
+  geom_rug(data = train_data, aes(LIMIT_BAL), inherit.aes = FALSE, alpha = .5,
+  color = "red") +
+  labs(x = "BILL_AMT1", y = "Probability",
+       title = "Partial Dependence Plot for BILL_AMT1 from Pruned Tree Model") +
+  theme_bw()
+
+grid.arrange(plot.1, plot.2, ncol =2)
+```
+Similar to the `PAY_1` variable, the distribution of level contribution of `BILL_AMT1` in the pruned model is less volatile than that of the full model. In the partial dependence plot for `BILL_AMT1` from the full model, we can observe that the contribution falls in a fluctuating manner as the bill statement amount from the previous month increases.
+
+
+## Model Evaluation
+```{r, fig.width=8, fig.height=6, message=FALSE}
+
+# For Full Model
+pred_full <- predict(tree_model, newdata = test_data, type = "prob")[, 2]
+
+roc_curve <- roc(test_data$Default, pred_full)
+
+youden <- roc_curve$specificities + roc_curve$sensitivities - 1
+optimal_idx <- which.max(youden)
+optimal_threshold <- roc_curve$thresholds[optimal_idx]
+
+pred_class_full <- ifelse(pred_full >= optimal_threshold, 1, 0)
+confusion_full <- table(test_data$Default, pred_class_full)
+accuracy_full <- sum(diag(confusion_full)) / sum(confusion_full)
+
+plot.1 <- ggroc(roc_curve, legacy.axes = TRUE) +
+  geom_vline(xintercept = optimal_threshold, linetype = "dashed", color = "red") +
+  ggtitle("ROC Curve of Full Model with Optimal Threshold") +
+  labs(x = "False Positive Rate (FPR)", y = "True Positive Rate (TPR)")
+
+# For Pruned Model
+pred_prune <- predict(tree_model_prune, newdata = test_data, type = "prob")[, 2]
+
+roc_curve_prune <- roc(test_data$Default, pred_prune)
+
+youden_prune <- roc_curve_prune$specificities + roc_curve_prune$sensitivities - 1
+optimal_idx_prune <- which.max(youden_prune)
+optimal_threshold_prune <- roc_curve_prune$thresholds[optimal_idx_prune]
+
+pred_class_prune <- ifelse(pred_prune >= optimal_threshold_prune, 1, 0)
+confusion_prune <- table(test_data$Default, pred_class_prune)
+accuracy_prune <- sum(diag(confusion_prune)) / sum(confusion_prune)
+
+plot.2 <- ggroc(roc_curve_prune, legacy.axes = TRUE) +
+  geom_vline(xintercept = optimal_threshold_prune, linetype = "dashed", color = "red") +
+  ggtitle("ROC Curve of Pruned Model with Optimal Threshold") +
+  labs(x = "False Positive Rate (FPR)", y = "True Positive Rate (TPR)")
+
+grid.arrange(plot.1, plot.2, ncol =2)
+
+cat("Accuracy of Full Model: ", accuracy_full, "\n")
+cat("Accuracy of Pruned Model: ", accuracy_prune, "\n")
+
+```
+The two plots above represent the Receiver Operating Characteristic (ROC) curves of the full model and the pruned model. The red line vertical to the X-axis represents the optimal threshold evaluated by the Youden index. The Area Under the Curve (AUC), which measures the area under the ROC curve, is a metric used to evaluate the performance of a binary classification model. Given the AUC of the full model is 0.7176, the AUC of the pruned model is 0.642, and the full model achieves the same level of TPR as the pruned model with a lower FPR, we can conclude that the full tree model is better if we focus on predicting true default clients (sensitivity). However, we can barely interpret the information given from the visualization of the full model, which can be seen as a trade-off between interpretability and model performance. 

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 3 [Logistic Regression] | Credit Crad Default Prediction</title>
+  <meta name="description" content="Chapter 3 [Logistic Regression] | Credit Crad Default Prediction" />
+  <meta name="generator" content="bookdown 0.33 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 3 [Logistic Regression] | Credit Crad Default Prediction" />
+  <meta property="og:type" content="book" />
+  
+  
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 3 [Logistic Regression] | Credit Crad Default Prediction" />
+  
+  
+  
+
+<meta name="author" content="Junhan Huang" />
+
+
+<meta name="date" content="2023-05-01" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="exploratory-data-analysis.html"/>
+<link rel="next" href="decision-tree.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">CCDP</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Proposal</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#motivation"><i class="fa fa-check"></i><b>1.1</b> Motivation</a></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#data"><i class="fa fa-check"></i><b>1.2</b> Data</a></li>
+<li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#models"><i class="fa fa-check"></i><b>1.3</b> Models</a></li>
+<li class="chapter" data-level="1.4" data-path="index.html"><a href="index.html#modeling-goal"><i class="fa fa-check"></i><b>1.4</b> Modeling Goal</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html"><i class="fa fa-check"></i><b>2</b> Exploratory Data Analysis</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#the-structure-of-dataset"><i class="fa fa-check"></i><b>2.1</b> The Structure of Dataset</a>
+<ul>
+<li class="chapter" data-level="2.1.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#data-identification"><i class="fa fa-check"></i><b>2.1.1</b> Data Identification</a></li>
+<li class="chapter" data-level="2.1.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#feature-problem-detection"><i class="fa fa-check"></i><b>2.1.2</b> Feature Problem Detection</a></li>
+</ul></li>
+<li class="chapter" data-level="2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#data-visualization-analysis"><i class="fa fa-check"></i><b>2.2</b> Data Visualization &amp; Analysis</a>
+<ul>
+<li class="chapter" data-level="2.2.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#label-default-of-credit-card"><i class="fa fa-check"></i><b>2.2.1</b> Label: Default of credit card</a></li>
+<li class="chapter" data-level="2.2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#categorical-variable"><i class="fa fa-check"></i><b>2.2.2</b> Categorical Variable</a></li>
+<li class="chapter" data-level="2.2.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#numerical-variable"><i class="fa fa-check"></i><b>2.2.3</b> Numerical Variable</a></li>
+</ul></li>
+<li class="chapter" data-level="2.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#eda-conclusion"><i class="fa fa-check"></i><b>2.3</b> EDA Conclusion</a>
+<ul>
+<li class="chapter" data-level="2.3.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#feature-selection"><i class="fa fa-check"></i><b>2.3.1</b> Feature Selection</a></li>
+<li class="chapter" data-level="2.3.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#data-wrangling-and-spliting"><i class="fa fa-check"></i><b>2.3.2</b> Data Wrangling and Spliting</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="logistic-regression.html"><a href="logistic-regression.html"><i class="fa fa-check"></i><b>3</b> [Logistic Regression]</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="logistic-regression.html"><a href="logistic-regression.html#introduction"><i class="fa fa-check"></i><b>3.1</b> Introduction</a></li>
+<li class="chapter" data-level="3.2" data-path="logistic-regression.html"><a href="logistic-regression.html#model-fitting"><i class="fa fa-check"></i><b>3.2</b> Model Fitting</a></li>
+<li class="chapter" data-level="3.3" data-path="logistic-regression.html"><a href="logistic-regression.html#model-interpretation"><i class="fa fa-check"></i><b>3.3</b> Model Interpretation</a>
+<ul>
+<li class="chapter" data-level="3.3.1" data-path="logistic-regression.html"><a href="logistic-regression.html#model-information"><i class="fa fa-check"></i><b>3.3.1</b> Model Information</a></li>
+<li class="chapter" data-level="3.3.2" data-path="logistic-regression.html"><a href="logistic-regression.html#shapley-values"><i class="fa fa-check"></i><b>3.3.2</b> Shapley Values</a></li>
+<li class="chapter" data-level="3.3.3" data-path="logistic-regression.html"><a href="logistic-regression.html#partial-dependence-plots-pdp"><i class="fa fa-check"></i><b>3.3.3</b> Partial Dependence Plots (PDP)</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="logistic-regression.html"><a href="logistic-regression.html#model-evaluation"><i class="fa fa-check"></i><b>3.4</b> Model Evaluation</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="decision-tree.html"><a href="decision-tree.html"><i class="fa fa-check"></i><b>4</b> Decision Tree</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="decision-tree.html"><a href="decision-tree.html#introduction-1"><i class="fa fa-check"></i><b>4.1</b> Introduction</a></li>
+<li class="chapter" data-level="4.2" data-path="decision-tree.html"><a href="decision-tree.html#model-fitting-1"><i class="fa fa-check"></i><b>4.2</b> Model Fitting</a>
+<ul>
+<li class="chapter" data-level="4.2.1" data-path="decision-tree.html"><a href="decision-tree.html#complexity-parameter-cp"><i class="fa fa-check"></i><b>4.2.1</b> Complexity Parameter (cp)</a></li>
+<li class="chapter" data-level="4.2.2" data-path="decision-tree.html"><a href="decision-tree.html#decision-tree-1"><i class="fa fa-check"></i><b>4.2.2</b> Decision Tree</a></li>
+</ul></li>
+<li class="chapter" data-level="4.3" data-path="decision-tree.html"><a href="decision-tree.html#model-interpreation"><i class="fa fa-check"></i><b>4.3</b> Model Interpreation</a>
+<ul>
+<li class="chapter" data-level="4.3.1" data-path="decision-tree.html"><a href="decision-tree.html#shapley-values-1"><i class="fa fa-check"></i><b>4.3.1</b> Shapley Values</a></li>
+<li class="chapter" data-level="4.3.2" data-path="decision-tree.html"><a href="decision-tree.html#partial-dependence-plots-pdp-1"><i class="fa fa-check"></i><b>4.3.2</b> Partial Dependence Plots (PDP)</a></li>
+</ul></li>
+<li class="chapter" data-level="4.4" data-path="decision-tree.html"><a href="decision-tree.html#model-evaluation-1"><i class="fa fa-check"></i><b>4.4</b> Model Evaluation</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="random-forest.html"><a href="random-forest.html"><i class="fa fa-check"></i><b>5</b> [Random Forest]</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="random-forest.html"><a href="random-forest.html#model-interpreation-1"><i class="fa fa-check"></i><b>5.1</b> Model Interpreation</a>
+<ul>
+<li class="chapter" data-level="5.1.1" data-path="random-forest.html"><a href="random-forest.html#shapley-values-2"><i class="fa fa-check"></i><b>5.1.1</b> Shapley Values</a></li>
+<li class="chapter" data-level="5.1.2" data-path="random-forest.html"><a href="random-forest.html#partial-dependence-plots-pdp-2"><i class="fa fa-check"></i><b>5.1.2</b> Partial Dependence Plots (PDP)</a></li>
+</ul></li>
+<li class="chapter" data-level="5.2" data-path="random-forest.html"><a href="random-forest.html#model-evaluation-2"><i class="fa fa-check"></i><b>5.2</b> Model Evaluation</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="reflections.html"><a href="reflections.html"><i class="fa fa-check"></i><b>6</b> Reflections</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="reflections.html"><a href="reflections.html#model-comparison"><i class="fa fa-check"></i><b>6.1</b> Model Comparison</a></li>
+<li class="chapter" data-level="6.2" data-path="reflections.html"><a href="reflections.html#main-takeaway"><i class="fa fa-check"></i><b>6.2</b> Main Takeaway</a></li>
+<li class="chapter" data-level="6.3" data-path="reflections.html"><a href="reflections.html#limitaion"><i class="fa fa-check"></i><b>6.3</b> Limitaion</a></li>
+<li class="chapter" data-level="6.4" data-path="reflections.html"><a href="reflections.html#future-work"><i class="fa fa-check"></i><b>6.4</b> Future Work</a></li>
+</ul></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Credit Crad Default Prediction</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="logistic-regression" class="section level1 hasAnchor" number="3">
+<h1><span class="header-section-number">Chapter 3</span> [Logistic Regression]<a href="logistic-regression.html#logistic-regression" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div id="introduction" class="section level2 hasAnchor" number="3.1">
+<h2><span class="header-section-number">3.1</span> Introduction<a href="logistic-regression.html#introduction" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Logistic regression is one of the most easy but powerful statistical method used to analyze the relationship between a binary dependent variable and one or more independent variables. It estimates the probability of an event occurring $ p=$ and the coefficients are commonly estimated via maximum likelihood estimation.</p>
+<p>The Assumption of Logistic Regression</p>
+<ul>
+<li><p>The Response Variable is Binary</p></li>
+<li><p>The Observations are Independent</p></li>
+<li><p>There is No Multicollinearity Among Explanatory Variables</p></li>
+<li><p>There are No Extreme Outliers</p></li>
+<li><p>There is a Linear Relationship Between Explanatory Variables and the Logit of the Response Variable</p></li>
+<li><p>The Sample Size is Sufficiently Large</p></li>
+</ul>
+</div>
+<div id="model-fitting" class="section level2 hasAnchor" number="3.2">
+<h2><span class="header-section-number">3.2</span> Model Fitting<a href="logistic-regression.html#model-fitting" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>The Logistic regression model is built below</p>
+<pre><code>## 
+## Call:
+## glm(formula = Default ~ ., family = &quot;binomial&quot;, data = train_data)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.9054  -0.6095  -0.5264  -0.3221   3.6263  
+## 
+## Coefficients:
+##              Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept) -13.67319   87.77502  -0.156  0.87621    
+## SEX2         -0.16768    0.03546  -4.728 2.26e-06 ***
+## EDUCATION1   10.94692   87.77272   0.125  0.90075    
+## EDUCATION2   10.97574   87.77272   0.125  0.90049    
+## EDUCATION3   10.85705   87.77273   0.124  0.90156    
+## EDUCATION4    9.69429   87.77396   0.110  0.91206    
+## EDUCATION5    9.37635   87.77325   0.107  0.91493    
+## EDUCATION6   10.51929   87.77399   0.120  0.90461    
+## MARRIAGE1     1.30127    0.63217   2.058  0.03955 *  
+## MARRIAGE2     1.14571    0.63223   1.812  0.06996 .  
+## MARRIAGE3     1.26239    0.65139   1.938  0.05263 .  
+## PAY_1-1       0.15835    0.07595   2.085  0.03706 *  
+## PAY_10       -0.39649    0.07615  -5.207 1.92e-07 ***
+## PAY_11        0.86565    0.07756  11.161  &lt; 2e-16 ***
+## PAY_12        2.22171    0.08530  26.045  &lt; 2e-16 ***
+## PAY_13        2.56335    0.16513  15.523  &lt; 2e-16 ***
+## PAY_14        2.26224    0.30262   7.475 7.69e-14 ***
+## PAY_15        1.05617    0.43946   2.403  0.01625 *  
+## PAY_16        1.94302    0.71566   2.715  0.00663 ** 
+## PAY_17        2.10503    0.84207   2.500  0.01242 *  
+## PAY_18        1.48281    0.51279   2.892  0.00383 ** 
+## AGE           0.03930    0.02002   1.963  0.04965 *  
+## LIMIT_BAL    -0.35759    0.02375 -15.054  &lt; 2e-16 ***
+## BILL_AMT1     0.13415    0.02294   5.849 4.96e-09 ***
+## PAY_AMT1     -0.24823    0.03996  -6.212 5.23e-10 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 25458  on 23999  degrees of freedom
+## Residual deviance: 21329  on 23975  degrees of freedom
+## AIC: 21379
+## 
+## Number of Fisher Scoring iterations: 11</code></pre>
+</div>
+<div id="model-interpretation" class="section level2 hasAnchor" number="3.3">
+<h2><span class="header-section-number">3.3</span> Model Interpretation<a href="logistic-regression.html#model-interpretation" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="model-information" class="section level3 hasAnchor" number="3.3.1">
+<h3><span class="header-section-number">3.3.1</span> Model Information<a href="logistic-regression.html#model-information" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Given the table above, we can gain information about the logistic regression we fit, such as :</p>
+<ul>
+<li>Estimated Coefficients for each predictor variable, which is the column named “Estimate”</li>
+<li>p value : The column named “Pr(&gt;|z|)”; The null hypothesis is the corresponding coefficient is zero, if the p-value is small enough (usually 0.05), we have significant evidence to reject the null hypothesis</li>
+</ul>
+<p><code>EDUCATION"X"</code>(X indicate the level of education) might be the set of the most important variables because the magnitude of coefficients represent how much they impact the prediction and all of the <code>EDUCATION"X"</code> magnitude are large. However, the summary of the logistic regression model shows that none of the p-value of <code>EDUCATION"X"</code> exceeded general threshold of significance, indicating that the result is not statistically significant. Consequently, we need more evaluation criteria to indentify the importance of feature.</p>
+</div>
+<div id="shapley-values" class="section level3 hasAnchor" number="3.3.2">
+<h3><span class="header-section-number">3.3.2</span> Shapley Values<a href="logistic-regression.html#shapley-values" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-33-1.png" width="768" /></p>
+<p>The Shapley value is the average contribution of a feature value to the prediction in different coalitions. The plot above shows the mean absolute SHAP values of the logistic regression we built, which represent the each variable’s impact to prediction. Because higher absolute mean Shapley value indicates a stronger impact to the prediction, the variable <code>PAY_1</code> having highest Shapley value is the most important for prediction and the <code>LIMIT_BAL</code> is the second.</p>
+</div>
+<div id="partial-dependence-plots-pdp" class="section level3 hasAnchor" number="3.3.3">
+<h3><span class="header-section-number">3.3.3</span> Partial Dependence Plots (PDP)<a href="logistic-regression.html#partial-dependence-plots-pdp" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="partial-dependence-plots-of-variable-pay_1" class="section level4 hasAnchor" number="3.3.3.1">
+<h4><span class="header-section-number">3.3.3.1</span> Partial Dependence Plots of variable <code>PAY_1</code><a href="logistic-regression.html#partial-dependence-plots-of-variable-pay_1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-34-1.png" width="768" /></p>
+<p>The PDP of Limit Balance shows that the relationship between the probability of default and PAY_1 are non-monomaniacal while all other features remain constant. More specifically, the probability of default fluctuates with the late payment status severity (The increase in delinquent months has paralleled the increase in severity) and attains highest at <code>PAY_1</code> = 3. Moreover, the distribution of contribution of each level of PAY_1 is coincide with the distribution of the coefficients of each level of PAY_1.</p>
+</div>
+<div id="partial-dependence-plots-of-variable-limit_bal" class="section level4 hasAnchor" number="3.3.3.2">
+<h4><span class="header-section-number">3.3.3.2</span> Partial Dependence Plots of variable <code>LIMIT_BAL</code><a href="logistic-regression.html#partial-dependence-plots-of-variable-limit_bal" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-35-1.png" width="768" /></p>
+<p>The PDP of Limit Balance shows that the relationship between the probability of default and Limit Balance are monomaniacal. More specifically, the probability of default will decrease if the limit balance increases. However, their relationship is non-linear because there is concave trend. Th trend also matches the exploratory data analysis of PAY_1 which states that the mean Limit Balance of the default clients are lower than non-default clients.</p>
+</div>
+</div>
+</div>
+<div id="model-evaluation" class="section level2 hasAnchor" number="3.4">
+<h2><span class="header-section-number">3.4</span> Model Evaluation<a href="logistic-regression.html#model-evaluation" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-36-1.png" width="768" /></p>
+<p>Because the model purpose is accurately predicting the credit card default clients, we should not only focus on the accuracy but also the sensitivity, which is the proportion of actual positive cases. From the plot we can find that accuracy and sensitivity achieve the best balance between correctly identifying positive cases (sensitivity) , while still maintaining a high overall rate of correct classifications (accuracy) at threshold = 0.2147215.</p>
+<p>The best accuracy is 0.6521667 and the best sensitivity is 0.6527132.</p>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-37-1.png" width="768" /></p>
+<p>The plot above represents the Receiver Operating Characteristic (ROC) curves of the random forest model. Area Under the Curve (AUC), which measures the area under the Receiver Operating Characteristic (ROC) curve, is a metric used to evaluate the performance of a binary classification model. Given the AUC of model = 0.707 and the TPR at the optimal threshold, we can make a conclusion that the logistic regression model is good if we focus on accuracy and sensitivity.</p>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="exploratory-data-analysis.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="decision-tree.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/jasoonhh/Junhan-Huang-Srping-2023-IMLV-Final-Project-/edit/main/model1.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": "https://github.com/jasoonhh/Junhan-Huang-Srping-2023-IMLV-Final-Project-/blob/main/model1.Rmd",
+"text": null
+},
+"download": null,
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

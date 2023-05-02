@@ -1,9 +1,50 @@
 --- 
-title: "YOUR TITLE HERE"
-author: "YOUR NAME HERE"
+title: "Credit Crad Default Prediction"
+author: "Junhan Huang"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 ---
 
 # Proposal
+
+## Motivation 
+
+The collapse of Silicon Valley Bank and Credit Suisse has had a significant impact on the financial industry and the economy as a whole. One of the major contributing factors to the collapse was the high number of defaults on credit cards issued by the banks. This highlights the importance of credit card client default prediction.
+
+
+## Data
+- Data Resource: [UCI: Default of credit card clients Data Set](https://archive.ics.uci.edu/ml/datasets/default+of+credit+card+clients#)
+
+
+- Data Variable Expalination: 
+
+  - *LIMIT_BAL* : 
+    - It includes both the individual consumer credit and his/her family (supplementary) credit.
+  - *SEX*: 
+    - 1 = male; 2 = female
+  - *EDUCATION*: 
+    - 1 = graduate school; 2 = university; 3 = high school; 4 = others
+  - *MARRIAGE*: 
+    - 1 = married; 2 = single; 3 = others
+  - *AGE*: 
+    - Year
+  - *PAY_1 - PAY_6*: 
+    - Each of the repayment status variables takes on integer values between -1 and 9, where -1 represents payment made on time (duly), and values from 1 to 9 represent the number of months of delay in payment. 
+  - *BILL_AMT1 - BILL_AMT6*: 
+    - Amount of previous bill statement (NT dollar)
+    - The suffix i of variables means the past i-th month bill statement amount
+  - *PAY_AMT1 - PAY_AMT6*: 
+    - Amount of previous payment (NT dollar); 
+    - The suffix i of variables means the past i-th month previous payment amount
+
+## Models
+- *Logistic Regression*
+- *Decision Tree*
+- *Random Forest*
+    
+## Modeling Goal
+- Predict whether or not a person will be a Credit Card defaulter based on the extracted features
+
+
+
 

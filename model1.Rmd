@@ -1,1 +1,206 @@
-# [Model 1]
+# [Logistic Regression]
+
+
+## Introduction
+
+Logistic regression is one of the most easy but powerful statistical method used to analyze the relationship between a binary dependent variable and one or more independent variables. It estimates the probability of an event occurring $ p=\frac{1}{1+exp(-(\beta_0+\beta_1X_1+...))}$ and the coefficients are commonly estimated via maximum likelihood estimation. 
+
+The Assumption of Logistic Regression
+
+- The Response Variable is Binary
+
+- The Observations are Independent
+
+- There is No Multicollinearity Among Explanatory Variables
+
+- There are No Extreme Outliers
+
+- There is a Linear Relationship Between Explanatory Variables and the Logit of the Response Variable
+
+- The Sample Size is Sufficiently Large
+
+```{r, message=FALSE, warning=FALSE}
+path = getwd()
+setwd(path)
+library(caret)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(pROC)
+library(pdp)
+```
+
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+New_Data <- read.csv("New_Data.csv")
+
+Cat_Var <- c("SEX", "EDUCATION", "MARRIAGE", "PAY_1")
+Num_Var <- c("AGE", "LIMIT_BAL", "BILL_AMT1", "PAY_AMT1")
+Label <- "Default"
+
+New_Data[, Num_Var] <- scale(New_Data[, Num_Var])
+for (col in Cat_Var) {
+  New_Data[[col]] <- factor(New_Data[[col]])
+}
+New_Data[[Label]] <- factor(New_Data[[Label]])
+
+set.seed(123)
+train_idx <- sample(nrow(New_Data), nrow(New_Data) * 0.8)
+train_data <- New_Data[train_idx, ]
+test_data <- New_Data[-train_idx, ]
+```
+
+
+
+## Model Fitting
+
+
+The Logistic regression model is built below
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+model <- glm(Default ~ ., data = train_data, family = "binomial")
+summary(model)
+```
+
+## Model Interpretation
+
+### Model Information
+Given the table above, we can gain information about the logistic regression we fit, such as :
+
+
+- Estimated Coefficients for each predictor variable, which is the column named "Estimate"
+- p value : The column named "Pr(>|z|)"; The null hypothesis is the corresponding coefficient is zero, if the p-value is small enough (usually 0.05), we have significant evidence to reject the null hypothesis
+
+ `EDUCATION"X"`(X indicate the level of education) might be the set of the most important variables because the magnitude of coefficients represent how much they impact the prediction and all of the `EDUCATION"X"` magnitude are large. However, the summary of the logistic regression model shows that none of the p-value of `EDUCATION"X"` exceeded general threshold of significance, indicating that the result is not statistically significant. Consequently, we need more evaluation criteria to indentify the importance of feature.
+
+### Shapley Values
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+pred <- function(model, newdata) {
+predict(model, newdata = newdata, type = "response")
+}
+
+shap_values <- fastshap::explain(
+model,
+X = train_data,
+feature_names = colnames(train_data |> select(-Default)),
+pred_wrapper = pred,
+nsim = 9,
+newdata = test_data,
+adjust = TRUE
+)
+
+shap_values <- shap_values[rowSums(is.na(shap_values)) == 0, ]
+
+shap <- as.data.frame(shap_values) |>
+rownames_to_column("id") |>
+pivot_longer(-id, names_to = "var", values_to = "shap_value")
+
+shap |>
+group_by(var) |>
+summarize(mean_absolute_shap_value = mean(abs(shap_value))) |>
+ggplot(aes(x = mean_absolute_shap_value, y = reorder(var, mean_absolute_shap_value))) +
+geom_col(fill = "cornflowerblue") +
+ylab("")
+
+```
+
+The Shapley value is the average contribution of a feature value to the prediction in different coalitions. The plot above shows the mean absolute SHAP values of the logistic regression we built, which represent the each variable's impact to prediction. Because higher absolute mean Shapley value indicates a stronger impact to the prediction, the variable `PAY_1` having highest Shapley value is the most important for prediction and the `LIMIT_BAL` is the second. 
+
+### Partial Dependence Plots (PDP)
+
+#### Partial Dependence Plots of variable `PAY_1`
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+pdp_PAY_1 <- partial(model, pred.var = "PAY_1",  prob = TRUE, rug = TRUE)
+
+ggplot(pdp_PAY_1, aes(x = PAY_1, y = yhat)) +
+  geom_bar(stat = "identity", fill = "cornflowerblue") +
+  labs(x = "PAY_1", y = "Probability",
+       title = "Partial Dependence Plot for PAY_1") +
+  theme_bw()
+
+```
+
+The PDP of Limit Balance shows that the relationship between the probability of default and PAY_1 are non-monomaniacal while all other features remain constant. More specifically, the probability of default fluctuates with the late payment status severity (The increase in delinquent months has paralleled the increase in severity) and attains highest at `PAY_1` = 3. Moreover, the distribution of contribution of each level of PAY_1 is coincide with the distribution of the coefficients of each level of PAY_1.
+
+#### Partial Dependence Plots of variable `LIMIT_BAL`
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+pdp_LIMIT_BAL <- partial(model, pred.var = "LIMIT_BAL", prob = TRUE, rug = TRUE)
+
+ggplot(pdp_LIMIT_BAL, aes(x = LIMIT_BAL, y = yhat)) +
+  geom_line(color = "blue") +
+  geom_rug(data = train_data, aes(LIMIT_BAL), inherit.aes = FALSE, alpha = .5,
+  color = "red") +
+  labs(x = "LIMIT_BAL", y = "Probability",
+       title = "Partial Dependence Plot for LIMIT_BAL") +
+  theme_bw()
+```
+
+The PDP of Limit Balance shows that the relationship between the probability of default and Limit Balance are monomaniacal. More specifically, the probability of default will decrease if the limit balance increases. However, their relationship is non-linear because there is concave trend. Th trend also matches the exploratory data analysis of PAY_1 which states that the mean Limit Balance of the default clients are lower than non-default clients.
+
+
+## Model Evaluation
+
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+pred <- predict(model, newdata = test_data, type = "response")
+predictions <- data.frame(prob = pred, label = test_data$Default)
+
+thresholds <- seq(0, 1, length.out = 10000)
+
+sensitivity <- numeric(length(thresholds))
+specificity <- numeric(length(thresholds))
+accuracy    <- numeric(length(thresholds))
+
+
+for (i in 1:length(thresholds)) {
+  threshold <- thresholds[i]
+  predicted_label <- ifelse(pred >= threshold, 1, 0)
+  tp <- sum(predicted_label == 1 & test_data$Default == 1)
+  tn <- sum(predicted_label == 0 & test_data$Default == 0)
+  fp <- sum(predicted_label == 1 & test_data$Default == 0)
+  fn <- sum(predicted_label == 0 & test_data$Default == 1)
+  sensitivity[i] <- tp / (tp + fn)
+  specificity[i] <- tn / (tn + fp)
+  accuracy[i] <- (tp + tn) / (tp + tn + fp + fn)
+}
+
+
+results <- data.frame(threshold = thresholds, sensitivity, specificity, accuracy)
+
+diff <- abs(results$accuracy - results$sensitivity)
+
+min_diff_thresh <- results$threshold[which.min(diff)]
+
+
+ggplot(results, aes(x = threshold)) +
+  geom_line(aes(y = sensitivity, color = "Sensitivity")) +
+  geom_line(aes(y = specificity, color = "Specificity")) +
+  geom_line(aes(y = accuracy, color = "Accuracy")) +
+  scale_color_manual(values = c("red", "blue", "green")) +
+  xlab("Threshold") +
+  ylab("Measure") +
+  ggtitle("Threshold vs Sensitivity, Specificity, and Accuracy")+
+  geom_vline(xintercept = min_diff_thresh, linetype = "dashed", color = "black") +
+  geom_hline(yintercept = results$accuracy[which.min(diff)], linetype = "dashed", color = "black")
+
+```
+
+Because the model purpose is accurately predicting the credit card default clients, we should not only focus on the accuracy but also the sensitivity, which is the proportion of actual positive cases. From the plot we can find that accuracy and sensitivity achieve the best balance between correctly identifying positive cases (sensitivity) , while still maintaining a high overall rate of correct classifications (accuracy) at threshold = 0.2147215.
+
+The best accuracy is 0.6521667 and the best sensitivity is 0.6527132.
+
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+roc_curve <- roc(test_data$Default, pred) 
+
+
+# Plot ROC curve with optimal threshold
+ggroc(roc_curve, legacy.axes = TRUE) +
+  ggtitle("ROC Curve of Full Model") +
+  labs(x = "False Positive Rate (FPR)", y = "True Positive Rate (TPR)")
+```
+
+The plot above represents the Receiver Operating Characteristic (ROC) curves of the random forest model. Area Under the Curve (AUC), which measures the area under the Receiver Operating Characteristic (ROC) curve, is a metric used to evaluate the performance of a binary classification model. Given the AUC of model = 0.707 and the TPR at the optimal threshold, we can make a conclusion that the logistic regression model is good if we focus on accuracy and sensitivity. 

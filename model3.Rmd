@@ -1,1 +1,138 @@
-# [Model 3]
+# [Random Forest]
+
+```{r, message=FALSE, warning=FALSE}
+path = getwd()
+setwd(path)
+library(rpart)
+library(caret)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(pROC)
+library(pdp)
+library(randomForest)
+library(gridExtra)
+library(ggplot2)
+```
+
+
+```{r}
+
+New_Data <- read.csv("New_Data.csv")
+
+Cat_Var <- c("SEX", "EDUCATION", "MARRIAGE", "PAY_1")
+Num_Var <- c("AGE", "LIMIT_BAL", "BILL_AMT1", "PAY_AMT1")
+Label <- "Default"
+
+New_Data[, Num_Var] <- scale(New_Data[, Num_Var])
+for (col in Cat_Var) {
+  New_Data[[col]] <- factor(New_Data[[col]])
+}
+New_Data[[Label]] <- factor(New_Data[[Label]])
+
+set.seed(123)
+train_idx <- sample(nrow(New_Data), nrow(New_Data) * 0.8)
+train_data <- New_Data[train_idx, ]
+test_data <- New_Data[-train_idx, ]
+```
+
+
+## Model Interpreation
+
+Because the random forest is a black box model, we interpret it direactly by Shapley value and PDP.
+
+```{r}
+set.seed(123)
+rf_model <- randomForest(Default ~ ., data = train_data, type = "classification")
+
+```
+
+### Shapley Values
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+pred <- function(model, newdata) {
+predict(model, newdata = newdata, type = "prob")[, 2]
+}
+
+shap_values <- fastshap::explain(
+rf_model,
+X = train_data,
+feature_names = colnames(train_data |> select(-Default)),
+pred_wrapper = pred,
+nsim = 9,
+newdata = test_data,
+adjust = TRUE
+)
+
+shap_values <- shap_values[rowSums(is.na(shap_values)) == 0, ]
+
+shap <- as.data.frame(shap_values) |>
+rownames_to_column("id") |>
+pivot_longer(-id, names_to = "var", values_to = "shap_value")
+
+shap |>
+group_by(var) |>
+summarize(mean_absolute_shap_value = mean(abs(shap_value))) |>
+ggplot(aes(x = mean_absolute_shap_value, y = reorder(var, mean_absolute_shap_value))) +
+geom_col(fill = "cornflowerblue") +
+ylab("")
+
+```
+The Shapley value is the average contribution of a feature value to the prediction in different coalitions. The plot above shows the mean absolute SHAP values of the random forest model we built, which represent the each variable's impact to prediction. The feature importance distribution is concurrent with logistic regression model's but different with decision tree's, which states that the most importance feature is `PAY_1` and the second is `LIMIT_BAL`. 
+
+### Partial Dependence Plots (PDP)
+
+#### Partial Dependence Plots of variable `PAY_1`
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+pdp_PAY_1 <- partial(rf_model, pred.var = "PAY_1",  prob = TRUE, rug = TRUE)
+
+ggplot(pdp_PAY_1, aes(x = PAY_1, y = yhat)) +
+  geom_bar(stat = "identity", fill = "cornflowerblue") +
+  labs(x = "PAY_1", y = "Probability",
+       title = "Partial Dependence Plot for PAY_1") +
+  theme_bw()
+
+```
+The random forest model's distribution of level contribution of `PAY_1` are similar with the full decision tree model's distribution of level contribution of `PAY_1`, which states that lower level of `PAY_1` (Indicating less delaying) have stronger impact to the prediction while other variable remain as constant. This information suggests that clients who have a history of less delaying in their payments (lower PAY_1 level) are less likely to default on their credit card payments. Because of the similarity, the paradoxical phenomenon that the full random forest model's distribution of level contribution of `PAY_1` is completely opposite with the logistic regression model's distribution of level contribution of `PAY_1` also exists.
+
+#### Partial Dependence Plots of variable `LIMIT_BAL`
+
+```{r, fig.width=8, fig.height=6, message=FALSE}
+pdp_LIMIT_BAL <- partial(rf_model, pred.var = "LIMIT_BAL", prob = TRUE, rug = TRUE)
+
+ggplot(pdp_LIMIT_BAL, aes(x = LIMIT_BAL, y = yhat)) +
+  geom_line(color = "blue") +
+  geom_rug(data = train_data, aes(LIMIT_BAL), inherit.aes = FALSE, alpha = .5,
+  color = "red") +
+  labs(x = "LIMIT_BAL", y = "Probability",
+       title = "Partial Dependence Plot for LIMIT_BAL") +
+  theme_bw()
+```
+The PDP of Limit Balance shows that the relationship between the probability of default and Limit Balance is non-monotonic More specifically, the probability of default will initially increase, and then decrease, and finally remain stable when the limit balance increases. The assumption of this relationship between the probability of default and Limit Balance is all other variables remain constant. 
+
+
+## Model Evaluation
+```{r, fig.width=8, fig.height=6, message=FALSE}
+pred <- predict(rf_model, newdata = test_data, type = "prob")[, 2]
+
+roc_curve <- roc(test_data$Default, pred)
+
+youden <- roc_curve$specificities + roc_curve$sensitivities - 1
+optimal_idx <- which.max(youden)
+optimal_threshold <- roc_curve$thresholds[optimal_idx]
+
+pred_class <- ifelse(pred >= optimal_threshold, 1, 0)
+confusion <- table(test_data$Default, pred_class)
+accuracy <- sum(diag(confusion)) / sum(confusion)
+
+ggroc(roc_curve, legacy.axes = TRUE) +
+  geom_vline(xintercept = optimal_threshold, linetype = "dashed", color = "red") +
+  ggtitle("ROC Curve of Full Model with Optimal Threshold") +
+  labs(x = "False Positive Rate (FPR)", y = "True Positive Rate (TPR)")
+
+cat("Accuracy: ", accuracy, "\n")
+
+```
+
+The plot above represents the Receiver Operating Characteristic (ROC) curves of the random forest model. The red line vertical to the X-axis represents the optimal threshold evaluated by the Youden index. Area Under the Curve (AUC), which measures the area under the Receiver Operating Characteristic (ROC) curve, is a metric used to evaluate the performance of a binary classification model. Given the AUC of model = 0.743 and the TPR at the optimal threshold, we can make a conclusion that the random forest model is good if we focus on accuracy and sensitivity. However, the random forest is a black box model, which means we cannot interpret it locally, but have to explain it using other models, such as Shapley values or partial dependence plots of variables. The lack of local interpretablilty is a representation of trade-off between interpretability and model performance. 

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 2 Exploratory Data Analysis | Credit Crad Default Prediction</title>
+  <meta name="description" content="Chapter 2 Exploratory Data Analysis | Credit Crad Default Prediction" />
+  <meta name="generator" content="bookdown 0.33 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 2 Exploratory Data Analysis | Credit Crad Default Prediction" />
+  <meta property="og:type" content="book" />
+  
+  
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 2 Exploratory Data Analysis | Credit Crad Default Prediction" />
+  
+  
+  
+
+<meta name="author" content="Junhan Huang" />
+
+
+<meta name="date" content="2023-05-01" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="index.html"/>
+<link rel="next" href="logistic-regression.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">CCDP</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Proposal</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#motivation"><i class="fa fa-check"></i><b>1.1</b> Motivation</a></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#data"><i class="fa fa-check"></i><b>1.2</b> Data</a></li>
+<li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#models"><i class="fa fa-check"></i><b>1.3</b> Models</a></li>
+<li class="chapter" data-level="1.4" data-path="index.html"><a href="index.html#modeling-goal"><i class="fa fa-check"></i><b>1.4</b> Modeling Goal</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html"><i class="fa fa-check"></i><b>2</b> Exploratory Data Analysis</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#the-structure-of-dataset"><i class="fa fa-check"></i><b>2.1</b> The Structure of Dataset</a>
+<ul>
+<li class="chapter" data-level="2.1.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#data-identification"><i class="fa fa-check"></i><b>2.1.1</b> Data Identification</a></li>
+<li class="chapter" data-level="2.1.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#feature-problem-detection"><i class="fa fa-check"></i><b>2.1.2</b> Feature Problem Detection</a></li>
+</ul></li>
+<li class="chapter" data-level="2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#data-visualization-analysis"><i class="fa fa-check"></i><b>2.2</b> Data Visualization &amp; Analysis</a>
+<ul>
+<li class="chapter" data-level="2.2.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#label-default-of-credit-card"><i class="fa fa-check"></i><b>2.2.1</b> Label: Default of credit card</a></li>
+<li class="chapter" data-level="2.2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#categorical-variable"><i class="fa fa-check"></i><b>2.2.2</b> Categorical Variable</a></li>
+<li class="chapter" data-level="2.2.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#numerical-variable"><i class="fa fa-check"></i><b>2.2.3</b> Numerical Variable</a></li>
+</ul></li>
+<li class="chapter" data-level="2.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#eda-conclusion"><i class="fa fa-check"></i><b>2.3</b> EDA Conclusion</a>
+<ul>
+<li class="chapter" data-level="2.3.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#feature-selection"><i class="fa fa-check"></i><b>2.3.1</b> Feature Selection</a></li>
+<li class="chapter" data-level="2.3.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#data-wrangling-and-spliting"><i class="fa fa-check"></i><b>2.3.2</b> Data Wrangling and Spliting</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="logistic-regression.html"><a href="logistic-regression.html"><i class="fa fa-check"></i><b>3</b> [Logistic Regression]</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="logistic-regression.html"><a href="logistic-regression.html#introduction"><i class="fa fa-check"></i><b>3.1</b> Introduction</a></li>
+<li class="chapter" data-level="3.2" data-path="logistic-regression.html"><a href="logistic-regression.html#model-fitting"><i class="fa fa-check"></i><b>3.2</b> Model Fitting</a></li>
+<li class="chapter" data-level="3.3" data-path="logistic-regression.html"><a href="logistic-regression.html#model-interpretation"><i class="fa fa-check"></i><b>3.3</b> Model Interpretation</a>
+<ul>
+<li class="chapter" data-level="3.3.1" data-path="logistic-regression.html"><a href="logistic-regression.html#model-information"><i class="fa fa-check"></i><b>3.3.1</b> Model Information</a></li>
+<li class="chapter" data-level="3.3.2" data-path="logistic-regression.html"><a href="logistic-regression.html#shapley-values"><i class="fa fa-check"></i><b>3.3.2</b> Shapley Values</a></li>
+<li class="chapter" data-level="3.3.3" data-path="logistic-regression.html"><a href="logistic-regression.html#partial-dependence-plots-pdp"><i class="fa fa-check"></i><b>3.3.3</b> Partial Dependence Plots (PDP)</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="logistic-regression.html"><a href="logistic-regression.html#model-evaluation"><i class="fa fa-check"></i><b>3.4</b> Model Evaluation</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="decision-tree.html"><a href="decision-tree.html"><i class="fa fa-check"></i><b>4</b> Decision Tree</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="decision-tree.html"><a href="decision-tree.html#introduction-1"><i class="fa fa-check"></i><b>4.1</b> Introduction</a></li>
+<li class="chapter" data-level="4.2" data-path="decision-tree.html"><a href="decision-tree.html#model-fitting-1"><i class="fa fa-check"></i><b>4.2</b> Model Fitting</a>
+<ul>
+<li class="chapter" data-level="4.2.1" data-path="decision-tree.html"><a href="decision-tree.html#complexity-parameter-cp"><i class="fa fa-check"></i><b>4.2.1</b> Complexity Parameter (cp)</a></li>
+<li class="chapter" data-level="4.2.2" data-path="decision-tree.html"><a href="decision-tree.html#decision-tree-1"><i class="fa fa-check"></i><b>4.2.2</b> Decision Tree</a></li>
+</ul></li>
+<li class="chapter" data-level="4.3" data-path="decision-tree.html"><a href="decision-tree.html#model-interpreation"><i class="fa fa-check"></i><b>4.3</b> Model Interpreation</a>
+<ul>
+<li class="chapter" data-level="4.3.1" data-path="decision-tree.html"><a href="decision-tree.html#shapley-values-1"><i class="fa fa-check"></i><b>4.3.1</b> Shapley Values</a></li>
+<li class="chapter" data-level="4.3.2" data-path="decision-tree.html"><a href="decision-tree.html#partial-dependence-plots-pdp-1"><i class="fa fa-check"></i><b>4.3.2</b> Partial Dependence Plots (PDP)</a></li>
+</ul></li>
+<li class="chapter" data-level="4.4" data-path="decision-tree.html"><a href="decision-tree.html#model-evaluation-1"><i class="fa fa-check"></i><b>4.4</b> Model Evaluation</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="random-forest.html"><a href="random-forest.html"><i class="fa fa-check"></i><b>5</b> [Random Forest]</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="random-forest.html"><a href="random-forest.html#model-interpreation-1"><i class="fa fa-check"></i><b>5.1</b> Model Interpreation</a>
+<ul>
+<li class="chapter" data-level="5.1.1" data-path="random-forest.html"><a href="random-forest.html#shapley-values-2"><i class="fa fa-check"></i><b>5.1.1</b> Shapley Values</a></li>
+<li class="chapter" data-level="5.1.2" data-path="random-forest.html"><a href="random-forest.html#partial-dependence-plots-pdp-2"><i class="fa fa-check"></i><b>5.1.2</b> Partial Dependence Plots (PDP)</a></li>
+</ul></li>
+<li class="chapter" data-level="5.2" data-path="random-forest.html"><a href="random-forest.html#model-evaluation-2"><i class="fa fa-check"></i><b>5.2</b> Model Evaluation</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="reflections.html"><a href="reflections.html"><i class="fa fa-check"></i><b>6</b> Reflections</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="reflections.html"><a href="reflections.html#model-comparison"><i class="fa fa-check"></i><b>6.1</b> Model Comparison</a></li>
+<li class="chapter" data-level="6.2" data-path="reflections.html"><a href="reflections.html#main-takeaway"><i class="fa fa-check"></i><b>6.2</b> Main Takeaway</a></li>
+<li class="chapter" data-level="6.3" data-path="reflections.html"><a href="reflections.html#limitaion"><i class="fa fa-check"></i><b>6.3</b> Limitaion</a></li>
+<li class="chapter" data-level="6.4" data-path="reflections.html"><a href="reflections.html#future-work"><i class="fa fa-check"></i><b>6.4</b> Future Work</a></li>
+</ul></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Credit Crad Default Prediction</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="exploratory-data-analysis" class="section level1 hasAnchor" number="2">
+<h1><span class="header-section-number">Chapter 2</span> Exploratory Data Analysis<a href="exploratory-data-analysis.html#exploratory-data-analysis" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div id="the-structure-of-dataset" class="section level2 hasAnchor" number="2.1">
+<h2><span class="header-section-number">2.1</span> The Structure of Dataset<a href="exploratory-data-analysis.html#the-structure-of-dataset" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>We should find out the type and amount of unique values in each column of the dataset. Basing on the type of columns and the amount of unique value, we can identify which variables are numerical and categorical.</p>
+<pre><code>##                Type Unique_Value_Amount
+## ID        character               30000
+## LIMIT_BAL   numeric                  81
+## SEX       character                   2
+## EDUCATION character                   7
+## MARRIAGE  character                   4
+## AGE         numeric                  56
+## PAY_0       numeric                  11
+## PAY_2       numeric                  11
+## PAY_3       numeric                  11
+## PAY_4       numeric                  11
+## PAY_5       numeric                  10
+## PAY_6       numeric                  10
+## BILL_AMT1   numeric               22723
+## BILL_AMT2   numeric               22346
+## BILL_AMT3   numeric               22026
+## BILL_AMT4   numeric               21548
+## BILL_AMT5   numeric               21010
+## BILL_AMT6   numeric               20604
+## PAY_AMT1    numeric                7943
+## PAY_AMT2    numeric                7899
+## PAY_AMT3    numeric                7518
+## PAY_AMT4    numeric                6937
+## PAY_AMT5    numeric                6897
+## PAY_AMT6    numeric                6939
+## Default   character                   2</code></pre>
+<div id="data-identification" class="section level3 hasAnchor" number="2.1.1">
+<h3><span class="header-section-number">2.1.1</span> Data Identification<a href="exploratory-data-analysis.html#data-identification" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>From the data frame above, we can find “SEX”, “EDUCATION” and “MARRIAGE” have character value and “PAY_0”, “PAY_2”, “PAY_3”, “PAY_4”, “PAY_5”, “PAY_6” have numerical value but little unique value amount. Combined with the data description, we can recognize the above variables as categorical variables. To the rest variables except “ID” and “Default”, we will treat them as numerical variable. “ID” will be dropped because it have unique value for each row which it will not provide any information for prediction. “Default” is the label.</p>
+</div>
+<div id="feature-problem-detection" class="section level3 hasAnchor" number="2.1.2">
+<h3><span class="header-section-number">2.1.2</span> Feature Problem Detection<a href="exploratory-data-analysis.html#feature-problem-detection" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<ol style="list-style-type: decimal">
+<li><p>There is a naming error because there is no variable named <code>PAY_0</code> in the data description and missing the variable named <code>PAY_1</code>.</p></li>
+<li><p>The data description states that unique values of variables <code>PAY_1</code> to <code>PAY_6</code> should be -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, which means the maxium of unique variable amount is 11. However, the unique value amount of <code>PAY_1</code> to <code>PAY_4</code> concluded above are all 11. Then we check the unique value of variable <code>PAY_1</code> to <code>PAY_6</code>, we can find that there are two extra value “-2” and “0” which is not defined in data description.</p></li>
+</ol>
+<pre><code>## $PAY_1
+##  [1]  2 -1  0 -2  1  3  4  8  7  5  6
+## 
+## $PAY_2
+##  [1]  2  0 -1 -2  3  5  7  4  1  6  8
+## 
+## $PAY_3
+##  [1] -1  0  2 -2  3  4  6  7  1  5  8
+## 
+## $PAY_4
+##  [1] -1  0 -2  2  3  4  5  7  6  1  8
+## 
+## $PAY_5
+##  [1] -2  0 -1  2  3  5  4  7  8  6
+## 
+## $PAY_6
+##  [1] -2  2  0 -1  3  6  4  7  8  5</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>Similar with variable <code>PAY_1</code> to <code>PAY_6</code>, variable <code>EDUCATION</code> should only have 4 but actually 7 in Structure data frame above. By checking the unique value of variable <code>EDUCATION</code>, we find there are 3 extra value 0, 5, 6.</li>
+</ol>
+<pre><code>## [1] &quot;2&quot; &quot;1&quot; &quot;3&quot; &quot;5&quot; &quot;4&quot; &quot;6&quot; &quot;0&quot;</code></pre>
+<ol start="4" style="list-style-type: decimal">
+<li>Similar with variable <code>EDUCATION</code>, variable <code>EDUCATION</code> should only have 3 but actually 4 in Structure data frame above. By checking the unique value of variable <code>EDUCATION</code>, we find there is extra value 0.</li>
+</ol>
+<pre><code>## [1] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;0&quot;</code></pre>
+</div>
+</div>
+<div id="data-visualization-analysis" class="section level2 hasAnchor" number="2.2">
+<h2><span class="header-section-number">2.2</span> Data Visualization &amp; Analysis<a href="exploratory-data-analysis.html#data-visualization-analysis" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="label-default-of-credit-card" class="section level3 hasAnchor" number="2.2.1">
+<h3><span class="header-section-number">2.2.1</span> Label: Default of credit card<a href="exploratory-data-analysis.html#label-default-of-credit-card" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-10-1.png" width="768" /></p>
+<ul>
+<li>77.88% of the observations in the data set belong to the non-default group (Default = 0).</li>
+<li>22.12% of the observations in the data set belong to the default group (Default = 1).</li>
+<li>There are 23,364 observations in the non-default class and only 6,636 observations in the default class, which is a large difference in the number of observations, indicating a class imbalance.</li>
+</ul>
+</div>
+<div id="categorical-variable" class="section level3 hasAnchor" number="2.2.2">
+<h3><span class="header-section-number">2.2.2</span> Categorical Variable<a href="exploratory-data-analysis.html#categorical-variable" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The data analysis of categorical variable is aiming to explore the relationship between the selected variable and the Default variable in a dataset. By grouping the data by these two variables and calculating the percentage of observations in each group, we can see how the percentage of defaults differs between males and females.</p>
+<p>Moreover, the chi-squared test is used to determine whether there is a significant association between Default and categorical feature.</p>
+<div id="sex" class="section level4 hasAnchor" number="2.2.2.1">
+<h4><span class="header-section-number">2.2.2.1</span> SEX<a href="exploratory-data-analysis.html#sex" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-11-1.png" width="768" /></p>
+<ul>
+<li><p>We firstly notice that the distribution of Default status is different between Male and Female, which indicates that there may be a difference in the proportion of males and females who default on their financial obligations.</p></li>
+<li><p>However, gender is a sensitive attribute and we should find more significant evidence to make a conclusion.</p></li>
+</ul>
+<pre><code>## 
+##  Pearson&#39;s Chi-squared test with Yates&#39; continuity correction
+## 
+## data:  cont_table
+## X-squared = 47.709, df = 1, p-value = 4.945e-12</code></pre>
+<p><span class="math inline">\(H_0:\)</span> There is no significant association between the categorical variable <code>SEX</code> and <code>Default</code>.</p>
+<p><span class="math inline">\(H_a:\)</span> There is significant association between the categorical variable <code>SEX</code> and <code>Default</code>.</p>
+<ul>
+<li>Given the Chi-Squared Test above, since the p-value is smaller than the common significance level of 0.05, we can reject the null hypothesis (<span class="math inline">\(H_0\)</span>) at the 5% level of significance. This means that we do have sufficient evidence to conclude that there is a significant association between <code>SEX</code> and <code>Default</code>.</li>
+</ul>
+</div>
+<div id="education" class="section level4 hasAnchor" number="2.2.2.2">
+<h4><span class="header-section-number">2.2.2.2</span> EDUCATION<a href="exploratory-data-analysis.html#education" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-13-1.png" width="768" /></p>
+<ul>
+<li><p>Because the value of <code>EDUCATION</code> defined in data description are only 1, 2, 3, and the proportion of undefined value is smaller enough (&lt;0.1%), we can ignore the information from the undefined value.</p></li>
+<li><p>The plot shows that the distribution of Default status is different between Education levels and revels a trend that the clients who have higher Education level will has lower possibility to default because there is lower proportion of default clients in the group of clients who has higher Education level.</p></li>
+</ul>
+<pre><code>## 
+##  Pearson&#39;s Chi-squared test
+## 
+## data:  cont_table
+## X-squared = 97, df = 2, p-value &lt; 2.2e-16</code></pre>
+<p><span class="math inline">\(H_0:\)</span> There is no significant association between the categorical variable <code>EDUCATION</code> and <code>Default</code>.</p>
+<p><span class="math inline">\(H_a:\)</span> There is significant association between the categorical variable <code>EDUCATION</code> and <code>Default</code>.</p>
+<ul>
+<li>Given the Chi-Squared Test above, since the p-value is smaller than the common significance level of 0.05, we can reject the null hypothesis (<span class="math inline">\(H_0\)</span>) at the 5% level of significance. This means that we do have sufficient evidence to conclude that there is a significant association between <code>EDUCATION</code> and <code>Default</code>.</li>
+</ul>
+</div>
+<div id="marriage" class="section level4 hasAnchor" number="2.2.2.3">
+<h4><span class="header-section-number">2.2.2.3</span> MARRIAGE<a href="exploratory-data-analysis.html#marriage" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-15-1.png" width="768" /></p>
+<ul>
+<li><p>Because the value of <code>MARRIAGE</code> defined in data description are only 1, 2, 3, and the proportion of undefined value is smaller enough (&lt;0.3%), we can ignore the information from the undefined value.</p></li>
+<li><p>The plot shows that the distribution of Default status is different between MARRIAGE levels</p></li>
+</ul>
+<pre><code>## 
+##  Pearson&#39;s Chi-squared test
+## 
+## data:  cont_table
+## X-squared = 30.446, df = 2, p-value = 2.448e-07</code></pre>
+<p><span class="math inline">\(H_0:\)</span> There is no significant association between the categorical variable <code>MARRIAGE</code> and <code>Default</code>.</p>
+<p><span class="math inline">\(H_a:\)</span> There is significant association between the categorical variable <code>MARRIAGE</code> and <code>Default</code>.</p>
+<ul>
+<li>Given the Chi-Squared Test above, since the p-value is smaller than the common significance level of 0.05, we can reject the null hypothesis (<span class="math inline">\(H_0\)</span>) at the 5% level of significance. This means that we do have sufficient evidence to conclude that there is a significant association between <code>MARRIAGE</code> and <code>Default</code>.</li>
+</ul>
+</div>
+<div id="past-payment-action" class="section level4 hasAnchor" number="2.2.2.4">
+<h4><span class="header-section-number">2.2.2.4</span> Past Payment Action<a href="exploratory-data-analysis.html#past-payment-action" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-17-1.png" width="768" /></p>
+<ul>
+<li>All 6 variable share similar bell-shaped right skewed distribution which is that value 0 has highest proportion, value -2 has secondly highest proportion and then value -1 has third.Only variable <code>PAY_1</code> has a speacial case that value 1 share secondly highest proportion.</li>
+</ul>
+</div>
+</div>
+<div id="numerical-variable" class="section level3 hasAnchor" number="2.2.3">
+<h3><span class="header-section-number">2.2.3</span> Numerical Variable<a href="exploratory-data-analysis.html#numerical-variable" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The data analysis of numerical variable will focus on the distribution, statistics and inter-correlation between each numerical variable.</p>
+<div id="amount-of-the-given-credit" class="section level4 hasAnchor" number="2.2.3.1">
+<h4><span class="header-section-number">2.2.3.1</span> Amount of the given credit<a href="exploratory-data-analysis.html#amount-of-the-given-credit" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-18-1.png" width="768" /></p>
+<pre><code>## 
+##  Welch Two Sample t-test
+## 
+## data:  LIMIT_BAL by Default
+## t = 28.952, df = 11982, p-value &lt; 2.2e-16
+## alternative hypothesis: true difference in means between group 0 and group 1 is not equal to 0
+## 95 percent confidence interval:
+##  44740.91 51239.23
+## sample estimates:
+## mean in group 0 mean in group 1 
+##        178099.7        130109.7</code></pre>
+<ul>
+<li>The <code>LIMIT_BAL</code> distribution of default and non-default are similar, both of them are right-skewed and have extreme outlier.</li>
+<li>However, the mean of limited balance are differen t in two group, which indicates that non-default clients generally have higher limited balance than default clients.</li>
+<li>The statistics of them has great difference such as the mean and outlier of non-default is greater than default’s.</li>
+<li>From the result of T-Test whose null hypothesis is there is no difference between the Default’s credit limit mean and Non-Default’s credit limit mean, the p value is smaller than 2.2e-16 and consequently we have sigenificant evidence to reject the null hypothesis.</li>
+</ul>
+</div>
+<div id="age" class="section level4 hasAnchor" number="2.2.3.2">
+<h4><span class="header-section-number">2.2.3.2</span> AGE<a href="exploratory-data-analysis.html#age" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-19-1.png" width="768" /></p>
+<pre><code>## 
+##  Welch Two Sample t-test
+## 
+## data:  AGE by Default
+## t = -2.3195, df = 10173, p-value = 0.02039
+## alternative hypothesis: true difference in means between group 0 and group 1 is not equal to 0
+## 95 percent confidence interval:
+##  -0.56915863 -0.04778641
+## sample estimates:
+## mean in group 0 mean in group 1 
+##        35.41727        35.72574</code></pre>
+<ul>
+<li>The distribution of Age of default and non-default clients are slightly different which is that default clients has more average proportion in each age but non-default clients’ age are more centered, but both of distribution are right-skewed.</li>
+<li>However, the boxplot indicates that both of two kinds of clients have similar average age and have extreme outlier.
+– From the result of T-Test whose null hypothesis is there is no difference between the Default’s Age mean and Non-Default’s Age mean, the p value is 0.02039 and consequently we have sigenificant evidence to reject the null hypothesis under the significant level 0.05.</li>
+</ul>
+</div>
+<div id="amount-of-bill-statement" class="section level4 hasAnchor" number="2.2.3.3">
+<h4><span class="header-section-number">2.2.3.3</span> Amount of bill statement<a href="exploratory-data-analysis.html#amount-of-bill-statement" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-20-1.png" width="768" /></p>
+<ul>
+<li><p>By comparing the six graphs, it can be seen that the amount of bills has fluctuated significantly in the past six months for both credit card defaulters and credit card defaulters.</p></li>
+<li><p>However, there is no significant difference in bill statement amount between credit card defaulters and credit card defaulters. The bill statement amount distribution of two kinds of clients are both right-skewed in all of the past 6 months.</p></li>
+</ul>
+<p>Because the bill statement amount of each month can show clients’ spending behavior which means the bill statement might be inter-correlated.
+<img src="finalproj_files/figure-html/unnamed-chunk-21-1.png" width="768" /></p>
+<ul>
+<li><p>From the corrplot, it can be said that all of 6 variable are highly inter-correlated because there correlation are all greater than 0.8</p></li>
+<li><p>The correlation level decreases when time period gap is greater, which indicates than the next month bill statement amount is most correlated with current bill statement amount.</p></li>
+</ul>
+</div>
+<div id="amount-of-payment" class="section level4 hasAnchor" number="2.2.3.4">
+<h4><span class="header-section-number">2.2.3.4</span> Amount of Payment<a href="exploratory-data-analysis.html#amount-of-payment" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-22-1.png" width="768" /></p>
+<ul>
+<li><p>By comparing the six graphs, we can observe that the amount of payment all gather in 0 with some extreme outlier in the past six months for both credit card defaulters and credit card defaulters.</p></li>
+<li><p>However, there is no significant difference in bill payment amount between credit card defaulters and credit card defaulters</p></li>
+</ul>
+<p>Because the bill payment amount of each month can show clients’ spending behavior which means the bill payment might be inter-correlated.</p>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-23-1.png" width="768" /></p>
+<ul>
+<li><p>From the corrplot, it can be said that all of 6 variable are less inter-correlated because there correlation are all smaller than 0.3</p></li>
+<li><p>The correlation level decreases when time period gap is greater, which indicates than the next month bill payment amount is most correlated with current bill payment amount.</p></li>
+</ul>
+</div>
+<div id="correlation" class="section level4 hasAnchor" number="2.2.3.5">
+<h4><span class="header-section-number">2.2.3.5</span> Correlation<a href="exploratory-data-analysis.html#correlation" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-24-1.png" width="768" /></p>
+<ul>
+<li>From the overall correlation plot, we can find variable <code>AGE</code> and <code>LIMIT_BAL</code> are not correlated with other numerical variable</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="eda-conclusion" class="section level2 hasAnchor" number="2.3">
+<h2><span class="header-section-number">2.3</span> EDA Conclusion<a href="exploratory-data-analysis.html#eda-conclusion" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="feature-selection" class="section level3 hasAnchor" number="2.3.1">
+<h3><span class="header-section-number">2.3.1</span> Feature Selection<a href="exploratory-data-analysis.html#feature-selection" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Following by the EDA of each variable, we decide to choose “SEX”, “EDUCATION”, “MARRIAGE”, “PAY_1”, “AGE”, “LIMIT_BAL”, “BILL_AMT1”, “PAY_AMT1” for further model building.</p>
+</div>
+<div id="data-wrangling-and-spliting" class="section level3 hasAnchor" number="2.3.2">
+<h3><span class="header-section-number">2.3.2</span> Data Wrangling and Spliting<a href="exploratory-data-analysis.html#data-wrangling-and-spliting" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Data wrangling includes data cleaning, transforming, and encoding.</p>
+<p>Randomly Split the data set to get train and test data set.</p>
+<ul>
+<li><p>The Dimension of Train Data: 24000 x 9</p></li>
+<li><p>The Dimension of Test Data: 6000 x 9</p></li>
+</ul>
+
+</div>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="logistic-regression.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/jasoonhh/Junhan-Huang-Srping-2023-IMLV-Final-Project-/edit/main/EDA.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": "https://github.com/jasoonhh/Junhan-Huang-Srping-2023-IMLV-Final-Project-/blob/main/EDA.Rmd",
+"text": null
+},
+"download": null,
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>
