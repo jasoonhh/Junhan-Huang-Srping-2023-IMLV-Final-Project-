@@ -1,4 +1,4 @@
-# [Decision Tree]
+# Decision Tree
 
 ```{r, message=FALSE, warning=FALSE}
 path = getwd()

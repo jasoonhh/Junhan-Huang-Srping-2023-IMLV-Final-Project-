@@ -1,4 +1,4 @@
-# [Random Forest]
+# Random Forest
 
 ```{r, message=FALSE, warning=FALSE}
 path = getwd()
