@@ -170,14 +170,14 @@
 <h2><span class="header-section-number">4.2</span> Model Fitting<a href="decision-tree.html#model-fitting-1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <div id="complexity-parameter-cp" class="section level3 hasAnchor" number="4.2.1">
 <h3><span class="header-section-number">4.2.1</span> Complexity Parameter (cp)<a href="decision-tree.html#complexity-parameter-cp" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p><img src="finalproj_files/figure-html/unnamed-chunk-41-1.png" width="768" />
+<p><img src="finalproj_files/figure-html/unnamed-chunk-4-1.png" width="768" />
 Complexity parameter is a regularization parameter that controls the tree size. Larger cp makes the tree simpler/smaller while smaller cp makes tree more complex.
 The line chart cp versus cross-validated error rate roughly shows that cross-validated error rate will decrease initially and increase later when cp is increasing. The tree model attains lowest cross-validated error rate when cp = 0.00101.</p>
 </div>
 <div id="decision-tree-1" class="section level3 hasAnchor" number="4.2.2">
 <h3><span class="header-section-number">4.2.2</span> Decision Tree<a href="decision-tree.html#decision-tree-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>The left plot is the full decision tree model and the right is the pruned decision tree model.</p>
-<p><img src="finalproj_files/figure-html/unnamed-chunk-42-1.png" width="768" /></p>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-5-1.png" width="768" /></p>
 <p>Given the two plot above, we can find that the pruning with cp = 0.00101 can significantly reduce the decision tree model complexity (From depth 28 to depth 3). As the full decision tree is too complex to read and interpret, we would pay more attention on the pruned tree model. In each node of the the pruned tree model, we can find the major label of the data in the node which is on the top of the node, the gini index which represent the measure of impurity and is at the middle of the node, and the percentage which represents the proportion of training instances that belong to each class at that node and is at the bottom of node. The conditioanl statement in the middle of branch is the criteria of splitting.</p>
 </div>
 </div>
@@ -185,7 +185,7 @@ The line chart cp versus cross-validated error rate roughly shows that cross-val
 <h2><span class="header-section-number">4.3</span> Model Interpreation<a href="decision-tree.html#model-interpreation" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <div id="shapley-values-1" class="section level3 hasAnchor" number="4.3.1">
 <h3><span class="header-section-number">4.3.1</span> Shapley Values<a href="decision-tree.html#shapley-values-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p><img src="finalproj_files/figure-html/unnamed-chunk-43-1.png" width="768" />
+<p><img src="finalproj_files/figure-html/unnamed-chunk-6-1.png" width="768" />
 The Shapley value is the average contribution of a feature value to the prediction in different coalitions. The plot above shows the mean absolute SHAP values of the decision tree model we built, which represent the each variable’s impact to prediction.
 Both of the full tree model and pruned tree model have same feature importance distribution and the most importance feature is <code>PAY_1</code> and the second is <code>BILL_AMT1</code>.
 However, by comparing the magnitude of mean absolute shap value between the full tree model and pruned tree model, we can find the pruned decision tree model treat the <code>PAY_1</code> more important than full decision tree.</p>
@@ -194,20 +194,20 @@ However, by comparing the magnitude of mean absolute shap value between the full
 <h3><span class="header-section-number">4.3.2</span> Partial Dependence Plots (PDP)<a href="decision-tree.html#partial-dependence-plots-pdp-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <div id="partial-dependence-plots-of-variable-pay_1-1" class="section level4 hasAnchor" number="4.3.2.1">
 <h4><span class="header-section-number">4.3.2.1</span> Partial Dependence Plots of variable <code>PAY_1</code><a href="decision-tree.html#partial-dependence-plots-of-variable-pay_1-1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p><img src="finalproj_files/figure-html/unnamed-chunk-44-1.png" width="768" />
+<p><img src="finalproj_files/figure-html/unnamed-chunk-7-1.png" width="768" />
 From the Partial Dependence Plot of PAY_1 from the full tree model and the pruned tree model, we can see that the pruning model’s distribution of level contribution of PAY_1 is less volatile than that of the full model. This information suggests that clients who have a history of less delay in their payments (lower PAY_1 level) are less likely to default on their credit card payments. The cut off of the level impact toward prediction at <code>PAY_1</code> = 2 matches both models partition criteria at <code>PAY_1</code>.</p>
 <p>However, there is a paradoxical phenomenon where the full decision tree model’s contribution distribution of PAY_1 levels is completely opposite to the logistic regression model’s contribution distribution of PAY_1 levels. This phenomenon could be explained by the exploratory data analysis of PAY_1, where the frequency distribution of PAY_1 levels among default clients is similar to the full decision tree model’s distribution of level contribution of PAY_1.</p>
 </div>
 <div id="partial-dependence-plots-of-variable-bill_amt1" class="section level4 hasAnchor" number="4.3.2.2">
 <h4><span class="header-section-number">4.3.2.2</span> Partial Dependence Plots of variable <code>BILL_AMT1</code><a href="decision-tree.html#partial-dependence-plots-of-variable-bill_amt1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p><img src="finalproj_files/figure-html/unnamed-chunk-45-1.png" width="768" />
+<p><img src="finalproj_files/figure-html/unnamed-chunk-8-1.png" width="768" />
 Similar to the <code>PAY_1</code> variable, the distribution of level contribution of <code>BILL_AMT1</code> in the pruned model is less volatile than that of the full model. In the partial dependence plot for <code>BILL_AMT1</code> from the full model, we can observe that the contribution falls in a fluctuating manner as the bill statement amount from the previous month increases.</p>
 </div>
 </div>
 </div>
 <div id="model-evaluation-1" class="section level2 hasAnchor" number="4.4">
 <h2><span class="header-section-number">4.4</span> Model Evaluation<a href="decision-tree.html#model-evaluation-1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p><img src="finalproj_files/figure-html/unnamed-chunk-46-1.png" width="768" /></p>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-9-1.png" width="768" /></p>
 <pre><code>## Accuracy of Full Model:  0.6995</code></pre>
 <pre><code>## Accuracy of Pruned Model:  0.8235</code></pre>
 <p>The two plots above represent the Receiver Operating Characteristic (ROC) curves of the full model and the pruned model. The red line vertical to the X-axis represents the optimal threshold evaluated by the Youden index. The Area Under the Curve (AUC), which measures the area under the ROC curve, is a metric used to evaluate the performance of a binary classification model. Given the AUC of the full model is 0.7176, the AUC of the pruned model is 0.642, and the full model achieves the same level of TPR as the pruned model with a lower FPR, we can conclude that the full tree model is better if we focus on predicting true default clients (sensitivity). However, we can barely interpret the information given from the visualization of the full model, which can be seen as a trade-off between interpretability and model performance.</p>
@@ -274,20 +274,6 @@ gitbook.start({
 });
 </script>
 
-<!-- dynamically load mathjax for compatibility with self-contained -->
-<script>
-  (function () {
-    var script = document.createElement("script");
-    script.type = "text/javascript";
-    var src = "true";
-    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
-    if (location.protocol !== "file:")
-      if (/^https?:/.test(src))
-        src = src.replace(/^https?:/, '');
-    script.src = src;
-    document.getElementsByTagName("head")[0].appendChild(script);
-  })();
-</script>
 </body>
 
 </html>

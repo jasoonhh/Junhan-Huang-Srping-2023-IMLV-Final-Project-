@@ -23,7 +23,7 @@
 <meta name="author" content="Junhan Huang" />
 
 
-<meta name="date" content="2023-05-01" />
+<meta name="date" content="2023-05-02" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -167,26 +167,26 @@
 <p>Because the random forest is a black box model, we interpret it direactly by Shapley value and PDP.</p>
 <div id="shapley-values-2" class="section level3 hasAnchor" number="5.1.1">
 <h3><span class="header-section-number">5.1.1</span> Shapley Values<a href="random-forest.html#shapley-values-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p><img src="finalproj_files/figure-html/unnamed-chunk-51-1.png" width="768" />
+<p><img src="finalproj_files/figure-html/unnamed-chunk-5-1.png" width="768" />
 The Shapley value is the average contribution of a feature value to the prediction in different coalitions. The plot above shows the mean absolute SHAP values of the random forest model we built, which represent the each variable’s impact to prediction. The feature importance distribution is concurrent with logistic regression model’s but different with decision tree’s, which states that the most importance feature is <code>PAY_1</code> and the second is <code>LIMIT_BAL</code>.</p>
 </div>
 <div id="partial-dependence-plots-pdp-2" class="section level3 hasAnchor" number="5.1.2">
 <h3><span class="header-section-number">5.1.2</span> Partial Dependence Plots (PDP)<a href="random-forest.html#partial-dependence-plots-pdp-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <div id="partial-dependence-plots-of-variable-pay_1-2" class="section level4 hasAnchor" number="5.1.2.1">
 <h4><span class="header-section-number">5.1.2.1</span> Partial Dependence Plots of variable <code>PAY_1</code><a href="random-forest.html#partial-dependence-plots-of-variable-pay_1-2" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p><img src="finalproj_files/figure-html/unnamed-chunk-52-1.png" width="768" />
+<p><img src="finalproj_files/figure-html/unnamed-chunk-6-1.png" width="768" />
 The random forest model’s distribution of level contribution of <code>PAY_1</code> are similar with the full decision tree model’s distribution of level contribution of <code>PAY_1</code>, which states that lower level of <code>PAY_1</code> (Indicating less delaying) have stronger impact to the prediction while other variable remain as constant. This information suggests that clients who have a history of less delaying in their payments (lower PAY_1 level) are less likely to default on their credit card payments. Because of the similarity, the paradoxical phenomenon that the full random forest model’s distribution of level contribution of <code>PAY_1</code> is completely opposite with the logistic regression model’s distribution of level contribution of <code>PAY_1</code> also exists.</p>
 </div>
 <div id="partial-dependence-plots-of-variable-limit_bal-1" class="section level4 hasAnchor" number="5.1.2.2">
 <h4><span class="header-section-number">5.1.2.2</span> Partial Dependence Plots of variable <code>LIMIT_BAL</code><a href="random-forest.html#partial-dependence-plots-of-variable-limit_bal-1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p><img src="finalproj_files/figure-html/unnamed-chunk-53-1.png" width="768" />
+<p><img src="finalproj_files/figure-html/unnamed-chunk-7-1.png" width="768" />
 The PDP of Limit Balance shows that the relationship between the probability of default and Limit Balance is non-monotonic More specifically, the probability of default will initially increase, and then decrease, and finally remain stable when the limit balance increases. The assumption of this relationship between the probability of default and Limit Balance is all other variables remain constant.</p>
 </div>
 </div>
 </div>
 <div id="model-evaluation-2" class="section level2 hasAnchor" number="5.2">
 <h2><span class="header-section-number">5.2</span> Model Evaluation<a href="random-forest.html#model-evaluation-2" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p><img src="finalproj_files/figure-html/unnamed-chunk-54-1.png" width="768" /></p>
+<p><img src="finalproj_files/figure-html/unnamed-chunk-8-1.png" width="768" /></p>
 <pre><code>## Accuracy:  0.7293333</code></pre>
 <p>The plot above represents the Receiver Operating Characteristic (ROC) curves of the random forest model. The red line vertical to the X-axis represents the optimal threshold evaluated by the Youden index. Area Under the Curve (AUC), which measures the area under the Receiver Operating Characteristic (ROC) curve, is a metric used to evaluate the performance of a binary classification model. Given the AUC of model = 0.743 and the TPR at the optimal threshold, we can make a conclusion that the random forest model is good if we focus on accuracy and sensitivity. However, the random forest is a black box model, which means we cannot interpret it locally, but have to explain it using other models, such as Shapley values or partial dependence plots of variables. The lack of local interpretablilty is a representation of trade-off between interpretability and model performance.</p>
 
@@ -252,20 +252,6 @@ gitbook.start({
 });
 </script>
 
-<!-- dynamically load mathjax for compatibility with self-contained -->
-<script>
-  (function () {
-    var script = document.createElement("script");
-    script.type = "text/javascript";
-    var src = "true";
-    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
-    if (location.protocol !== "file:")
-      if (/^https?:/.test(src))
-        src = src.replace(/^https?:/, '');
-    script.src = src;
-    document.getElementsByTagName("head")[0].appendChild(script);
-  })();
-</script>
 </body>
 
 </html>
